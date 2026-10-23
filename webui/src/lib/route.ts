@@ -103,6 +103,19 @@ export function pathMatcher(prefix: string): string {
 	return prefix.endsWith('/') ? `${prefix}*` : `${prefix}/*`;
 }
 
+export function hostUrl(host: string | null | undefined): string | null {
+	const value = (host ?? '').trim();
+	if (!value || value === '*' || /[{}*]/.test(value)) return null;
+	const candidate = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+	try {
+		const url = new URL(candidate);
+		if (!url.hostname) return null;
+		return candidate;
+	} catch {
+		return null;
+	}
+}
+
 export function stripValue(path: string): string {
 	return path.replace(/\*$/, '');
 }

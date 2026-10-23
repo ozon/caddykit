@@ -7,6 +7,7 @@
 	import { toast } from '$lib/store.svelte';
 	import { validateRoute } from '$lib/route-edit';
 	import RouteEditor from '$lib/components/RouteEditor.svelte';
+	import DomainLink from '$lib/components/DomainLink.svelte';
 	import CaddyfilePreview from '$lib/components/CaddyfilePreview.svelte';
 	import Badge from '$lib/components/Badge.svelte';
 	import PreviewDialog from '$lib/components/PreviewDialog.svelte';
@@ -146,7 +147,9 @@
 		<div class="mt-1 flex flex-wrap items-start justify-between gap-3">
 			<div>
 				<div class="flex flex-wrap items-center gap-2">
-					<h1 class="mono text-[18px] font-semibold tracking-tight">{view.host || view.id}</h1>
+					<h1 class="mono text-[18px] font-semibold tracking-tight">
+						<DomainLink host={view.host} label={view.host || view.id} />
+					</h1>
 					<Badge status={view.status} />
 					{#if self}<span class="badge badge-info">system route</span>{/if}
 					{#if view.managed && !self}<span class="badge">managed</span>{/if}

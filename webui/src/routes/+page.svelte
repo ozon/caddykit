@@ -5,6 +5,7 @@
 	import type { Preview, RouteView } from '$lib/types';
 	import { app, toast } from '$lib/store.svelte';
 	import Badge from '$lib/components/Badge.svelte';
+	import DomainLink from '$lib/components/DomainLink.svelte';
 	import PreviewDialog from '$lib/components/PreviewDialog.svelte';
 	import {
 		ArrowUpRight,
@@ -226,7 +227,7 @@
 							<Badge status={r.status} />
 						</td>
 						<td>
-							<span class="mono text-[12px]">{r.host || '—'}</span>
+							<DomainLink host={r.host} label={r.host || '—'} className="mono text-[12px]" />
 							{#if r.id}
 								<span class="faint mono ml-2 hidden text-[10px] xl:inline">{r.id.replace('caddykit/r/', '')}</span>
 							{/if}

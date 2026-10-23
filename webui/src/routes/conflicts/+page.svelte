@@ -5,6 +5,7 @@
 	import type { Conflict, Preview } from '$lib/types';
 	import { app, toast } from '$lib/store.svelte';
 	import Badge from '$lib/components/Badge.svelte';
+	import DomainLink from '$lib/components/DomainLink.svelte';
 	import PreviewDialog from '$lib/components/PreviewDialog.svelte';
 	import { CheckCircle2, RefreshCw } from '@lucide/svelte';
 
@@ -139,7 +140,9 @@
 					<div class="min-w-0">
 						<div class="flex flex-wrap items-center gap-2">
 							<Badge status={c.kind.toLowerCase()} label={c.kind} />
-							<h2 class="mono text-[13.5px] font-semibold">{c.host || c.route_id}</h2>
+							<h2 class="mono text-[13.5px] font-semibold">
+								<DomainLink host={c.host} label={c.host || c.route_id} />
+							</h2>
 							<a href="/routes/{c.route_id.split('/').map(encodeURIComponent).join('/')}" class="faint mono text-[10.5px] hover:text-[var(--fg)]">
 								{c.route_id}
 							</a>
