@@ -1,0 +1,19 @@
+{
+  "extends": "$app/tsconfig",
+  "include": [
+    "src",
+    "test",
+    "*"
+  ],
+  "exclude": [
+    "src/service-worker"
+  ],
+  "compilerOptions": {
+    "strict": true,
+    "moduleResolution": "bundler",
+    "types": [
+      "$app/types",
+      "node"
+    ]
+  }
+}

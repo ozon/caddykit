@@ -1,0 +1,28 @@
+schema_version: 1
+id: mcphub
+name: MCPHub
+description: Reverse proxy for MCPHub (MCP server management platform)
+parameters:
+  - name: domain
+    type: domain
+    required: true
+    description: Public hostname for the MCPHub dashboard
+  - name: upstream_port
+    type: port
+    default: 3000
+    description: Port MCPHub listens on (default container port is 3000)
+requirements:
+  - "MCPHub must listen on 127.0.0.1:{{upstream_port}}"
+  - "The public DNS name {{domain}} must point at this Caddy server"
+route:
+  host: "{{domain}}"
+  upstream: "127.0.0.1:{{upstream_port}}"
+  path_prefix: ""
+  strip_prefix: false
+  upstream_tls: false
+  request_headers:
+    set: {}
+    delete: []
+  response_headers:
+    set: {}
+    delete: []

@@ -1,0 +1,29 @@
+schema_version: 1
+id: omniroute
+name: OmniRoute
+description: Reverse proxy for the OmniRoute AI gateway (API and dashboard)
+parameters:
+  - name: domain
+    type: domain
+    required: true
+    description: Public hostname for the OmniRoute dashboard and API
+  - name: upstream_port
+    type: port
+    default: 20128
+    description: Port OmniRoute listens on (default 20128, API under /v1)
+requirements:
+  - "OmniRoute must listen on 127.0.0.1:{{upstream_port}}"
+  - "Start it with 'omniroute serve' or 'npx omniroute'"
+  - "The public DNS name {{domain}} must point at this Caddy server"
+route:
+  host: "{{domain}}"
+  upstream: "127.0.0.1:{{upstream_port}}"
+  path_prefix: ""
+  strip_prefix: false
+  upstream_tls: false
+  request_headers:
+    set: {}
+    delete: []
+  response_headers:
+    set: {}
+    delete: []
