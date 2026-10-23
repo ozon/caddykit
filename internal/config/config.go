@@ -1,4 +1,4 @@
-// Package config resolves devproxy configuration with the precedence
+// Package config resolves caddykit configuration with the precedence
 // CLI argument > environment variable > default (spec §1.1).
 package config
 
@@ -34,14 +34,14 @@ type Config struct {
 // FromEnv builds defaults, taking environment variables into account.
 func FromEnv() Config {
 	c := Config{
-		CaddyAdmin:        env("DEVPROXY_CADDY_ADMIN", DefaultCaddyAdmin),
-		Domain:            os.Getenv("DEVPROXY_DOMAIN"),
-		DataDir:           env("DEVPROXY_DATA_DIR", filepath.Join(xdg("XDG_DATA_HOME", ".local/share"), "devproxy")),
-		TemplateDir:       env("DEVPROXY_TEMPLATE_DIR", filepath.Join(xdg("XDG_CONFIG_HOME", ".config"), "devproxy", "templates")),
+		CaddyAdmin:        env("CADDYKIT_CADDY_ADMIN", DefaultCaddyAdmin),
+		Domain:            os.Getenv("CADDYKIT_DOMAIN"),
+		DataDir:           env("CADDYKIT_DATA_DIR", filepath.Join(xdg("XDG_DATA_HOME", ".local/share"), "caddykit")),
+		TemplateDir:       env("CADDYKIT_TEMPLATE_DIR", filepath.Join(xdg("XDG_CONFIG_HOME", ".config"), "caddykit", "templates")),
 		ReconcileInterval: DefaultReconcileInterval,
-		Server:            os.Getenv("DEVPROXY_SERVER"),
+		Server:            os.Getenv("CADDYKIT_SERVER"),
 	}
-	if v := os.Getenv("DEVPROXY_RECONCILE_INTERVAL"); v != "" {
+	if v := os.Getenv("CADDYKIT_RECONCILE_INTERVAL"); v != "" {
 		if d, err := time.ParseDuration(v); err == nil {
 			c.ReconcileInterval = d
 		}

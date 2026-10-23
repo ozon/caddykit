@@ -11,9 +11,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"devproxy/internal/config"
-	"devproxy/internal/core"
-	"devproxy/internal/model"
+	"caddykit/internal/config"
+	"caddykit/internal/core"
+	"caddykit/internal/model"
 )
 
 type stringList []string
@@ -387,7 +387,7 @@ func editRouteFile(raw model.Route, expectedID string) (model.Route, error) {
 	if len(parts) == 0 {
 		return nil, errors.New("$EDITOR is empty")
 	}
-	f, err := os.CreateTemp("", "devproxy-route-*.json")
+	f, err := os.CreateTemp("", "caddykit-route-*.json")
 	if err != nil {
 		return nil, err
 	}

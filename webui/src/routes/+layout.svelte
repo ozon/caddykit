@@ -45,7 +45,7 @@
 	}
 
 	onMount(() => {
-		const saved = localStorage.getItem('devproxy.theme');
+		const saved = localStorage.getItem('caddykit.theme');
 		setTheme(saved === 'light' ? 'light' : 'dark');
 		readCsrfCookie();
 
@@ -110,7 +110,7 @@
 </script>
 
 <svelte:head>
-	<title>devproxy</title>
+	<title>caddykit</title>
 	<meta name="description" content="Manage Caddy proxy routes for local developer services." />
 </svelte:head>
 
@@ -119,12 +119,12 @@
 		class="sticky top-0 z-20 border-b border-[var(--line)] bg-[color-mix(in_srgb,var(--bg)_88%,transparent)] backdrop-blur-md"
 	>
 		<div class="mx-auto flex h-12 max-w-[1320px] items-center gap-5 px-4 sm:px-6">
-			<a href="/" class="flex items-center gap-2" aria-label="devproxy home">
+			<a href="/" class="flex items-center gap-2" aria-label="caddykit home">
 				<span
 					class="mono flex h-6 w-6 items-center justify-center border border-[var(--accent)] text-[11px] font-bold text-[var(--accent)]"
 					>dp</span
 				>
-				<span class="mono text-[13px] font-semibold tracking-tight">devproxy</span>
+				<span class="mono text-[13px] font-semibold tracking-tight">caddykit</span>
 			</a>
 
 			{#if !isLogin}
@@ -215,7 +215,7 @@
 			{@render children()}
 		{:else}
 			<div class="flex items-center gap-2 py-16 text-[var(--muted)]">
-				<span class="spinner"></span> Loading devproxy…
+				<span class="spinner"></span> Loading caddykit…
 			</div>
 		{/if}
 	</main>

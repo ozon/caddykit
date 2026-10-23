@@ -20,7 +20,7 @@ export class ApiError extends Error {
 
 export function readCsrfCookie(): string {
 	if (typeof document === 'undefined') return '';
-	const m = document.cookie.match(/(?:^|; )devproxy_csrf=([^;]+)/);
+	const m = document.cookie.match(/(?:^|; )caddykit_csrf=([^;]+)/);
 	return m ? decodeURIComponent(m[1]) : '';
 }
 

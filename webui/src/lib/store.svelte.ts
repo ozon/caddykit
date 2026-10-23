@@ -23,5 +23,5 @@ export function toast(message: string, ms = 4000) {
 export function setTheme(theme: 'dark' | 'light') {
 	app.theme = theme;
 	if (typeof document !== 'undefined') document.documentElement.dataset.theme = theme;
-	if (typeof localStorage !== 'undefined') localStorage.setItem('devproxy.theme', theme);
+	if (typeof localStorage !== 'undefined') localStorage.setItem('caddykit.theme', theme);
 }

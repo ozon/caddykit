@@ -130,7 +130,7 @@
 	onMount(load);
 </script>
 
-<svelte:head><title>{view?.host || 'Route'} · devproxy</title></svelte:head>
+<svelte:head><title>{view?.host || 'Route'} · caddykit</title></svelte:head>
 
 {#if loading}
 	<div class="panel flex items-center gap-2 px-4 py-8 text-[12px] text-[var(--muted)]">

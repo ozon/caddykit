@@ -1,4 +1,4 @@
-# devproxy
+# caddykit
 
 Ein einzelnes Go-Binary, das ausgewählte Caddy-Proxy-Routen für lokale
 Entwicklerdienste verwaltet – über die Caddy-Admin-API, mit CLI und Web-UI,
@@ -18,7 +18,7 @@ Caddy-Einstellungen, kein Mehrbenutzerbetrieb. Siehe
 | Build | Go ≥ 1.23, Node ≥ 22.12, npm |
 | Integrationstests | Docker (Caddy 2.10 und 2.11) |
 
-`devproxy` spricht ausschließlich mit der Caddy-Admin-API. Caddy muss bereits
+`caddykit` spricht ausschließlich mit der Caddy-Admin-API. Caddy muss bereits
 laufen und die gewünschte Domain per HTTPS bereitstellen; Zertifikate und
 globale Caddy-Konfiguration werden nicht angefasst.
 
@@ -34,8 +34,8 @@ make integration  # echte Caddy-Container: 2.10 und 2.11
 `make build` erzeugt:
 
 ```
-dist/devproxy-linux-amd64
-dist/devproxy-linux-arm64
+dist/caddykit-linux-amd64
+dist/caddykit-linux-arm64
 ```
 
 Die Web-UI ist in das Binary eingebettet (`embed`); zur Laufzeit wird weder
@@ -44,7 +44,7 @@ Node noch ein separates Frontend benötigt.
 ## Schnellstart
 
 ```sh
-./dist/devproxy-linux-amd64 web --domain proxy.dev.example.com
+./dist/caddykit-linux-amd64 web --domain proxy.dev.example.com
 ```
 
 Beim Start:
@@ -54,7 +54,7 @@ Beim Start:
 3. Caddy-Erreichbarkeit und Etag prüfen,
 4. eigenes Startpasswort erzeugen,
 5. Domain-Konflikt prüfen,
-6. `devproxy/self` anlegen/reparieren,
+6. `caddykit/self` anlegen/reparieren,
 7. Backend auf `127.0.0.1:<ephemeral>` binden,
 8. URL und Passwort **einmal** auf stdout ausgeben,
 9. initialer Abgleich, danach alle 10 s (±20 % Jitter).
@@ -65,7 +65,7 @@ Startpasswort: XXXX…
 ```
 
 Die UI läuft unter der angegebenen Domain über Caddy. Ein HTTP-Fallback gibt es
-nicht. `devproxy/self` wird beim Beenden auf eine statische 503-Antwort
+nicht. `caddykit/self` wird beim Beenden auf eine statische 503-Antwort
 umgestellt; die Routen der Entwicklerdienste bleiben aktiv.
 
 ## Konfiguration
@@ -74,12 +74,12 @@ Priorität: **CLI-Argument > Umgebungsvariable > Standard**.
 
 | Parameter | Argument | Env | Default |
 |---|---|---|---|
-| Caddy Admin-API | `--caddy-admin` | `DEVPROXY_CADDY_ADMIN` | `http://localhost:2019` |
-| Web-UI-Domain | `--domain` | `DEVPROXY_DOMAIN` | — (Pflicht für `web`) |
-| Datenverzeichnis | `--data-dir` | `DEVPROXY_DATA_DIR` | `$XDG_DATA_HOME/devproxy` |
-| Template-Verzeichnis | `--template-dir` | `DEVPROXY_TEMPLATE_DIR` | `$XDG_CONFIG_HOME/devproxy/templates` |
-| Abgleichintervall | `--reconcile-interval` | `DEVPROXY_RECONCILE_INTERVAL` | `10s` (2s–5m) |
-| HTTP-Server | `--server` | `DEVPROXY_SERVER` | Autodetect (`:80`/`:443`, genau ein Kandidat) |
+| Caddy Admin-API | `--caddy-admin` | `CADDYKIT_CADDY_ADMIN` | `http://localhost:2019` |
+| Web-UI-Domain | `--domain` | `CADDYKIT_DOMAIN` | — (Pflicht für `web`) |
+| Datenverzeichnis | `--data-dir` | `CADDYKIT_DATA_DIR` | `$XDG_DATA_HOME/caddykit` |
+| Template-Verzeichnis | `--template-dir` | `CADDYKIT_TEMPLATE_DIR` | `$XDG_CONFIG_HOME/caddykit/templates` |
+| Abgleichintervall | `--reconcile-interval` | `CADDYKIT_RECONCILE_INTERVAL` | `10s` (2s–5m) |
+| HTTP-Server | `--server` | `CADDYKIT_SERVER` | Autodetect (`:80`/`:443`, genau ein Kandidat) |
 | Remote-Admin | `--allow-remote-admin` | — | aus; nur HTTPS oder Unix-Socket |
 | Unsicheres Upstream-TLS | `--allow-insecure` | — | aus |
 
@@ -93,20 +93,20 @@ Priorität: **CLI-Argument > Umgebungsvariable > Standard**. Variablen werden
 nur beim Prozessstart gelesen; eine Änderung erfordert einen Neustart.
 Leere Variablen gelten als nicht gesetzt.
 
-#### Von devproxy selbst
+#### Von caddykit selbst
 
 | Variable | Gelesen von | Bedeutung | Standard / Fallback |
 |---|---|---|---|
-| `DEVPROXY_CADDY_ADMIN` | `web`, CLI | Caddy-Admin-API; `http(s)://…` oder `unix//pfad/zum.sock` | `http://localhost:2019` |
-| `DEVPROXY_DOMAIN` | `web` | Öffentliche UI-Domain; Pflicht für `web` | — (dann `--domain` nötig) |
-| `DEVPROXY_DATA_DIR` | `web`, CLI | Zustand, Undo, Journal, Locks, IPC-Token, Socket-Fallback | `$XDG_DATA_HOME/devproxy`, sonst `$HOME/.local/share/devproxy` |
-| `DEVPROXY_TEMPLATE_DIR` | `web`, CLI | Lokale Templates (haben Vorrang vor eingebetteten) | `$XDG_CONFIG_HOME/devproxy/templates`, sonst `$HOME/.config/devproxy/templates` |
-| `DEVPROXY_RECONCILE_INTERVAL` | `web` | Abgleichintervall als Go-Duration (`10s`, `2m`, `1h30m`) | `10s`; gültig 2s–5m |
-| `DEVPROXY_SERVER` | `web`, CLI | Name des Caddy-HTTP-Servers | Autodetect (`:80`/`:443`, genau ein Kandidat); One-Shot-CLI nutzt sonst den in `state.json` gespeicherten Server |
-| `XDG_DATA_HOME` | `web`, CLI | Basis für `DEVPROXY_DATA_DIR`, falls dieses nicht gesetzt ist | `$HOME/.local/share` |
-| `XDG_CONFIG_HOME` | `web`, CLI | Basis für `DEVPROXY_TEMPLATE_DIR`, falls dieses nicht gesetzt ist | `$HOME/.config` |
+| `CADDYKIT_CADDY_ADMIN` | `web`, CLI | Caddy-Admin-API; `http(s)://…` oder `unix//pfad/zum.sock` | `http://localhost:2019` |
+| `CADDYKIT_DOMAIN` | `web` | Öffentliche UI-Domain; Pflicht für `web` | — (dann `--domain` nötig) |
+| `CADDYKIT_DATA_DIR` | `web`, CLI | Zustand, Undo, Journal, Locks, IPC-Token, Socket-Fallback | `$XDG_DATA_HOME/caddykit`, sonst `$HOME/.local/share/caddykit` |
+| `CADDYKIT_TEMPLATE_DIR` | `web`, CLI | Lokale Templates (haben Vorrang vor eingebetteten) | `$XDG_CONFIG_HOME/caddykit/templates`, sonst `$HOME/.config/caddykit/templates` |
+| `CADDYKIT_RECONCILE_INTERVAL` | `web` | Abgleichintervall als Go-Duration (`10s`, `2m`, `1h30m`) | `10s`; gültig 2s–5m |
+| `CADDYKIT_SERVER` | `web`, CLI | Name des Caddy-HTTP-Servers | Autodetect (`:80`/`:443`, genau ein Kandidat); One-Shot-CLI nutzt sonst den in `state.json` gespeicherten Server |
+| `XDG_DATA_HOME` | `web`, CLI | Basis für `CADDYKIT_DATA_DIR`, falls dieses nicht gesetzt ist | `$HOME/.local/share` |
+| `XDG_CONFIG_HOME` | `web`, CLI | Basis für `CADDYKIT_TEMPLATE_DIR`, falls dieses nicht gesetzt ist | `$HOME/.config` |
 | `XDG_RUNTIME_DIR` | `web`, CLI | Verzeichnis für den IPC-Socket; Socket-Datei Mode 0600 | Datenverzeichnis, wenn nicht gesetzt oder kein Verzeichnis |
-| `HOME` | `web`, CLI | Fallback für die XDG-Pfade | —; fehlt `HOME`, werden relative Pfade (`.local/share/devproxy`, `.config/devproxy/templates`) benutzt |
+| `HOME` | `web`, CLI | Fallback für die XDG-Pfade | —; fehlt `HOME`, werden relative Pfade (`.local/share/caddykit`, `.config/caddykit/templates`) benutzt |
 | `EDITOR` | CLI | Editor für `routes edit --json-edit` | `vi` |
 | `TMPDIR` | CLI | Temporärdatei für den JSON-Editor (Mode 0600, wird gelöscht) | Go-Standard, üblich `/tmp` |
 | `PATH` | CLI | Auflösung des Editor-Kommandos aus `$EDITOR` | Prozess-PATH |
@@ -115,16 +115,16 @@ Leere Variablen gelten als nicht gesetzt.
 
 Details und Stolperfallen:
 
-- **`DEVPROXY_DOMAIN` gilt nur für `web`.** Bei `routes …` ist `--domain` der
-  Hostname der Route; diese Befehle ignorieren `DEVPROXY_DOMAIN`.
-- **Ungültiges `DEVPROXY_RECONCILE_INTERVAL`** (z. B. ohne Einheit) wird
+- **`CADDYKIT_DOMAIN` gilt nur für `web`.** Bei `routes …` ist `--domain` der
+  Hostname der Route; diese Befehle ignorieren `CADDYKIT_DOMAIN`.
+- **Ungültiges `CADDYKIT_RECONCILE_INTERVAL`** (z. B. ohne Einheit) wird
   stillschweigend ignoriert; der Default `10s` greift. Ein syntaktisch gültiger,
   aber außerhalb 2s–5m liegender Wert führt zu einem Startfehler (Exit 2).
 - **Pfade werden nicht expandiert.** `~` wird nicht aufgelöst; relative Pfade
   beziehen sich auf das Arbeitsverzeichnis des Prozesses. Das Datenverzeichnis
   wird mit Mode 0700 angelegt. Das Runtime-Verzeichnis muss existieren und
   beschreibbar sein; sonst wird der Socket im Datenverzeichnis angelegt.
-- **`DEVPROXY_TEMPLATE_DIR` muss nicht existieren.** Fehlt es oder ist es leer,
+- **`CADDYKIT_TEMPLATE_DIR` muss nicht existieren.** Fehlt es oder ist es leer,
   werden nur die eingebetteten Default-Templates (`mcphub`, `omniroute`)
   verwendet. Lokale YAML-Dateien gleicher ID haben Vorrang.
 - **`XDG_RUNTIME_DIR` muss für Web-Prozess und CLI identisch sein**, sonst
@@ -133,7 +133,7 @@ Details und Stolperfallen:
 - **Bei laufendem Web-Prozess leitet die CLI nur weiter.** Caddy-Admin,
   Server, Template-Verzeichnis und Abgleichintervall kommen dann vom
   Web-Prozess; die CLI-Flags/Env dieser Parameter ändern den laufenden
-  Eigentümer nicht. `DEVPROXY_DATA_DIR` und `XDG_RUNTIME_DIR` müssen dagegen
+  Eigentümer nicht. `CADDYKIT_DATA_DIR` und `XDG_RUNTIME_DIR` müssen dagegen
   übereinstimmen, damit die CLI den Socket findet.
 - **`EDITOR` wird an Leerzeichen getrennt**, nicht durch eine Shell. Argumente
   mit Leerzeichen/Quoting werden nicht unterstützt. Beispiel:
@@ -150,19 +150,19 @@ Details und Stolperfallen:
 Beispiel:
 
 ```sh
-export DEVPROXY_CADDY_ADMIN=http://127.0.0.1:2019
-export DEVPROXY_DATA_DIR="$HOME/.devproxy"
-export DEVPROXY_TEMPLATE_DIR="$HOME/.config/devproxy/templates"
-export DEVPROXY_DOMAIN=proxy.dev.example.com
-export DEVPROXY_RECONCILE_INTERVAL=15s
+export CADDYKIT_CADDY_ADMIN=http://127.0.0.1:2019
+export CADDYKIT_DATA_DIR="$HOME/.caddykit"
+export CADDYKIT_TEMPLATE_DIR="$HOME/.config/caddykit/templates"
+export CADDYKIT_DOMAIN=proxy.dev.example.com
+export CADDYKIT_RECONCILE_INTERVAL=15s
 export EDITOR="vi"
 
-devproxy web
+caddykit web
 ```
 
 #### Nur für Build und Tests
 
-Diese Variablen werden nicht vom `devproxy`-Binary gelesen, sondern von
+Diese Variablen werden nicht vom `caddykit`-Binary gelesen, sondern von
 `Makefile`, Integrationstests oder Playwright:
 
 | Variable | Verwendet von | Bedeutung | Standard |
@@ -171,35 +171,35 @@ Diese Variablen werden nicht vom `devproxy`-Binary gelesen, sondern von
 | `NPM` | `Makefile` | npm-Kommando | `npm` |
 | `VERSION` | `Makefile` | Version via `-X main.version=…` | `git describe --tags --always --dirty`, sonst `dev` |
 | `CADDY_IMAGE` | `test/integration` | Caddy-Container-Image | `caddy:2.10`; `make integration` setzt nacheinander `caddy:2.10` und `caddy:2.11` |
-| `DEVPROXY_E2E_BASE_URL` | Playwright | Basis-URL einer laufenden Instanz | — (Tests werden übersprungen) |
-| `DEVPROXY_E2E_PASSWORD` | Playwright | Startpasswort für den E2E-Login | — (Tests werden übersprungen) |
+| `CADDYKIT_E2E_BASE_URL` | Playwright | Basis-URL einer laufenden Instanz | — (Tests werden übersprungen) |
+| `CADDYKIT_E2E_PASSWORD` | Playwright | Startpasswort für den E2E-Login | — (Tests werden übersprungen) |
 | `PATH` | Build/Tests | `go`, `npm`, `docker`, Editor | Prozess-PATH |
 
 `make integration` verwendet die Docker-CLI; deren eigene Variablen (z. B.
-`DOCKER_HOST`) gelten, werden aber nicht von devproxy ausgewertet.
+`DOCKER_HOST`) gelten, werden aber nicht von caddykit ausgewertet.
 `GOTOOLCHAIN` ist eine Go-Standardvariable; Hinweise zum golangci-lint-Mismatch
 stehen in [TESTING.md](TESTING.md).
 
 ## CLI
 
 ```text
-devproxy web --domain <d> [Optionen]
+caddykit web --domain <d> [Optionen]
 
-devproxy routes list [--all] [--json]
-devproxy routes show <route> [--json]
-devproxy routes add --domain <d> --upstream <host:port> [Optionen]
-devproxy routes add --template <name> --param k=v ...
-devproxy routes edit <route> [--json-edit | Formular-Flags]
-devproxy routes adopt <route|host> [--yes]
-devproxy routes unmanage <route> [--yes]
-devproxy routes delete <route> [--yes]
+caddykit routes list [--all] [--json]
+caddykit routes show <route> [--json]
+caddykit routes add --domain <d> --upstream <host:port> [Optionen]
+caddykit routes add --template <name> --param k=v ...
+caddykit routes edit <route> [--json-edit | Formular-Flags]
+caddykit routes adopt <route|host> [--yes]
+caddykit routes unmanage <route> [--yes]
+caddykit routes delete <route> [--yes]
 
-devproxy conflicts list [--json]
-devproxy conflicts resolve <route> --action take-current|apply-desired|unmanage [--yes]
+caddykit conflicts list [--json]
+caddykit conflicts resolve <route> --action take-current|apply-desired|unmanage [--yes]
 
-devproxy undo [--yes] [--json]
-devproxy templates list [--json]
-devproxy templates show <name> [--json]
+caddykit undo [--yes] [--json]
+caddykit templates list [--json]
+caddykit templates show <name> [--json]
 ```
 
 Formular-Flags für `add`/`edit`: `--path-prefix`, `--strip-prefix`,
@@ -232,7 +232,7 @@ ausgegeben.
 
 Läuft der Web-Prozess, leitet die CLI alle Aktionen über den Unix-Socket an den
 Zustandseigentümer weiter. Läuft er nicht, führt die CLI einen einmaligen
-Vorgang unter `devproxy.lock` und `state.lock` aus – ohne Abgleich und ohne UI.
+Vorgang unter `caddykit.lock` und `state.lock` aus – ohne Abgleich und ohne UI.
 
 ## Web-UI
 
@@ -245,7 +245,7 @@ Handler-Editor/JSON/Caddyfile), Konfliktcenter, Undo, Templates, Settings.
 - `/`: Filter fokussieren
 - Status-Polling alle 5 s und bei `visibilitychange`
 - JSON-Tab lädt CodeMirror 6 erst bei Bedarf
-- `devproxy/self` ist als Systemroute geschützt
+- `caddykit/self` ist als Systemroute geschützt
 - 409 `PREVIEW_STALE` → Vorschau wird erneuert und erneut bestätigt
 
 ### Handler-Editor
@@ -259,7 +259,7 @@ Der Form-Tab der Route-Detailseite bearbeitet den vollständigen Routenbaum:
 - Unbekannte Handler und Felder bleiben erhalten und sind über die
   Advanced-Felder pro Objekt editierbar; der JSON-Tab bleibt der vollständige
   Fallback.
-- Fremde Routen werden beim Speichern adoptiert; `devproxy/self` bleibt
+- Fremde Routen werden beim Speichern adoptiert; `caddykit/self` bleibt
   gesperrt.
 
 ### Caddyfile-Vorschau
@@ -279,7 +279,7 @@ Server); nach dem Handler-Editor wurde sie nicht neu gemessen. Details in
 
 - **Sollzustand** (`state.json`): nur ausdrücklich verwaltete Routen
   (`create`, `adopt`, `template`) mit stabilem `@id`, Snapshot und Anker.
-- **Identität**: neue Routen `devproxy/r/<uuidv7>`; fremde `@id` werden bei
+- **Identität**: neue Routen `caddykit/r/<uuidv7>`; fremde `@id` werden bei
   Übernahme nie überschrieben.
 - **Schreiben**: Fresh-Read + Etag → Diff → Bestätigung → `If-Match`-Write →
   Verifikation. 412 wird bis zu 3× mit frischem Read wiederholt; ändert sich
@@ -308,7 +308,7 @@ Server); nach dem Handler-Editor wurde sie nicht neu gemessen. Details in
   Backoff bis 15 min.
 - Sessions serverseitig, Cookie `Secure; HttpOnly; SameSite=Strict`, Idle 30 min,
   absolut 12 h, Prozessende ⇒ ungültig.
-- CSRF: `devproxy_csrf` (nicht HttpOnly) + `X-CSRF-Token`, serverseitig geprüft.
+- CSRF: `caddykit_csrf` (nicht HttpOnly) + `X-CSRF-Token`, serverseitig geprüft.
 - IPC: Unix-Socket `0600`, Token-Datei `0600`, Header `X-Devproxy-Token` für
   Schreibzugriffe.
 - Sensible Headerwerte werden in Vorschauen/Diffs redigiert (Anzeige, kein
@@ -324,10 +324,10 @@ Im Datenverzeichnis:
 | `state.json` | Sollzustand (Server + verwaltete Routen) |
 | `undo.json` | genau ein Undo-Schritt |
 | `opjournal.json` | max. eine offene Operation |
-| `devproxy.lock` | Prozesssperre |
+| `caddykit.lock` | Prozesssperre |
 | `state.lock` | kurze Dateitransaktionen |
 | `ipc.token` | Token für die lokale CLI-Schnittstelle |
-| `devproxy.sock` | Unix-Socket (bevorzugt `$XDG_RUNTIME_DIR`) |
+| `caddykit.sock` | Unix-Socket (bevorzugt `$XDG_RUNTIME_DIR`) |
 
 ## Templates
 

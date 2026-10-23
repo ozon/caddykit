@@ -6,7 +6,7 @@ export default defineConfig({
 	retries: 0,
 	reporter: 'list',
 	use: {
-		baseURL: process.env.DEVPROXY_E2E_BASE_URL,
+		baseURL: process.env.CADDYKIT_E2E_BASE_URL,
 		trace: 'retain-on-failure'
 	}
 });

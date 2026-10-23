@@ -1,5 +1,5 @@
 {
-  "name": "devproxy-webui",
+  "name": "caddykit-webui",
   "private": true,
   "version": "0.1.0",
   "type": "module",

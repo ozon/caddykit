@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"devproxy/internal/cli"
+	"caddykit/internal/cli"
 )
 
 var version = "dev"

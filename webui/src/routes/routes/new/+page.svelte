@@ -93,7 +93,7 @@
 	}
 </script>
 
-<svelte:head><title>New route · devproxy</title></svelte:head>
+<svelte:head><title>New route · caddykit</title></svelte:head>
 
 <div class="mb-4 flex items-center justify-between gap-3">
 	<div>

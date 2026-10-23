@@ -16,10 +16,10 @@ import (
 
 	"golang.org/x/sys/unix"
 
-	"devproxy/internal/config"
-	"devproxy/internal/core"
-	"devproxy/internal/templates"
-	"devproxy/internal/web"
+	"caddykit/internal/config"
+	"caddykit/internal/core"
+	"caddykit/internal/templates"
+	"caddykit/internal/web"
 )
 
 var errNeedConfirmation = errors.New("confirmation required")
@@ -30,23 +30,23 @@ func (e *usageError) Error() string { return e.err.Error() }
 func (e *usageError) Unwrap() error { return e.err }
 
 func usage(w io.Writer) {
-	_, _ = fmt.Fprint(w, `devproxy — manage Caddy proxy routes
+	_, _ = fmt.Fprint(w, `caddykit — manage Caddy proxy routes
 
 Usage:
-  devproxy web --domain <domain> [options]
-  devproxy routes list [--json] [--all]
-  devproxy routes show <route> [--json]
-  devproxy routes add --domain <d> --upstream <host:port> [options]
-  devproxy routes add --template <name> --param k=v ...
-  devproxy routes edit <route> [--json-edit | form flags]
-  devproxy routes adopt <route|host> [--yes]
-  devproxy routes unmanage <route> [--yes]
-  devproxy routes delete <route> [--yes]
-  devproxy conflicts list [--json]
-  devproxy conflicts resolve <route> --action take-current|apply-desired|unmanage [--yes]
-  devproxy undo [--yes] [--json]
-  devproxy templates list [--json]
-  devproxy templates show <name> [--json]
+  caddykit web --domain <domain> [options]
+  caddykit routes list [--json] [--all]
+  caddykit routes show <route> [--json]
+  caddykit routes add --domain <d> --upstream <host:port> [options]
+  caddykit routes add --template <name> --param k=v ...
+  caddykit routes edit <route> [--json-edit | form flags]
+  caddykit routes adopt <route|host> [--yes]
+  caddykit routes unmanage <route> [--yes]
+  caddykit routes delete <route> [--yes]
+  caddykit conflicts list [--json]
+  caddykit conflicts resolve <route> --action take-current|apply-desired|unmanage [--yes]
+  caddykit undo [--yes] [--json]
+  caddykit templates list [--json]
+  caddykit templates show <name> [--json]
 
 Common options: --caddy-admin, --data-dir, --template-dir, --server
                 --allow-remote-admin, --allow-insecure
@@ -83,13 +83,13 @@ func Run(args []string, version string) int {
 		return 0
 	}
 	if errors.Is(err, errNeedConfirmation) {
-		fmt.Fprintln(os.Stderr, "devproxy: confirmation required (use --yes)")
+		fmt.Fprintln(os.Stderr, "caddykit: confirmation required (use --yes)")
 		return 3
 	}
 	if errors.Is(err, flag.ErrHelp) {
 		return 0
 	}
-	fmt.Fprintln(os.Stderr, "devproxy:", err)
+	fmt.Fprintln(os.Stderr, "caddykit:", err)
 	return codeFor(err)
 }
 

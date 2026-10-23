@@ -35,7 +35,7 @@
 			>dp</span
 		>
 		<div>
-			<p class="mono text-[14px] font-semibold leading-none">devproxy</p>
+			<p class="mono text-[14px] font-semibold leading-none">caddykit</p>
 			<p class="faint mono mt-1 text-[10px] tracking-[0.12em] uppercase">caddy route control</p>
 		</div>
 	</div>
@@ -43,7 +43,7 @@
 	<form class="panel p-5" onsubmit={submit}>
 		<h1 class="text-[15px] font-semibold">Sign in</h1>
 		<p class="muted mt-1 text-[12px]">
-			Use the start password printed by <span class="mono">devproxy web</span>. It changes every process start.
+			Use the start password printed by <span class="mono">caddykit web</span>. It changes every process start.
 		</p>
 
 		<div class="mt-5">

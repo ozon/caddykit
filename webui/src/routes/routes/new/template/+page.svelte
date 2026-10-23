@@ -80,7 +80,7 @@
 	});
 </script>
 
-<svelte:head><title>New from template · devproxy</title></svelte:head>
+<svelte:head><title>New from template · caddykit</title></svelte:head>
 
 <div class="mb-4">
 	<a href="/routes/new" class="muted flex items-center gap-1 text-[11.5px] hover:text-[var(--fg)]"

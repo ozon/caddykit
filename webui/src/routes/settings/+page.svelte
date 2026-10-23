@@ -34,7 +34,7 @@
 	}
 </script>
 
-<svelte:head><title>Settings · devproxy</title></svelte:head>
+<svelte:head><title>Settings · caddykit</title></svelte:head>
 
 <div class="mb-4">
 	<h1 class="text-[18px] font-semibold tracking-tight">Settings</h1>

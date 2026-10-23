@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"devproxy/internal/state"
+	"caddykit/internal/state"
 )
 
 type APIError struct {
@@ -121,4 +121,4 @@ func (c *Client) Do(ctx context.Context, method, path string, in, out any) error
 	return nil
 }
 
-var ErrUnavailable = errors.New("devproxy web process is not reachable")
+var ErrUnavailable = errors.New("caddykit web process is not reachable")

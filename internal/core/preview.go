@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"devproxy/internal/model"
-	"devproxy/internal/state"
+	"caddykit/internal/model"
+	"caddykit/internal/state"
 )
 
 type Kind string
@@ -186,7 +186,7 @@ func (s *Service) previewEditLocked(sd *serverData, st *state.State, t *Target, 
 	}
 	if t.ID == SelfID || (t.Route.ID() == SelfID) {
 		p := &Preview{Kind: KindEdit, RouteID: SelfID, ETag: sd.ETag}
-		return blocked(p, BlockSelf, "devproxy/self can only be changed by the web lifecycle"), nil
+		return blocked(p, BlockSelf, "caddykit/self can only be changed by the web lifecycle"), nil
 	}
 	cur := t.Route.Clone()
 	p := &Preview{Kind: KindEdit, RouteID: t.ID, Base: clonePtr(t.Route), ETag: sd.ETag, Index: t.Index}
@@ -278,7 +278,7 @@ func (s *Service) PreviewDelete(ctx context.Context, sel string) (*Preview, erro
 	}
 	p := &Preview{Kind: KindDelete, RouteID: t.ID, ETag: sd.ETag}
 	if t.ID == SelfID {
-		return blocked(p, BlockSelf, "devproxy/self can only be changed by the web lifecycle"), nil
+		return blocked(p, BlockSelf, "caddykit/self can only be changed by the web lifecycle"), nil
 	}
 	if !t.Managed {
 		return blocked(p, BlockNotManaged, "only managed routes can be deleted; adopt it first"), nil
@@ -314,7 +314,7 @@ func (s *Service) previewAdoptLocked(sd *serverData, st *state.State, t *Target)
 		return blocked(p, BlockRouteMissing, "route does not exist"), nil
 	}
 	if t.ID == SelfID {
-		return blocked(p, BlockSelf, "devproxy/self is managed by the web lifecycle"), nil
+		return blocked(p, BlockSelf, "caddykit/self is managed by the web lifecycle"), nil
 	}
 	if t.Managed {
 		return blocked(p, BlockAlreadyManaged, "route is already managed"), nil
@@ -363,7 +363,7 @@ func (s *Service) PreviewUnmanage(ctx context.Context, sel string) (*Preview, er
 func (s *Service) previewUnmanageLocked(sd *serverData, st *state.State, t *Target) (*Preview, error) {
 	p := &Preview{Kind: KindUnmanage, RouteID: t.ID, ETag: sd.ETag, Index: t.Index}
 	if t.ID == SelfID {
-		return blocked(p, BlockSelf, "devproxy/self is managed by the web lifecycle"), nil
+		return blocked(p, BlockSelf, "caddykit/self is managed by the web lifecycle"), nil
 	}
 	if !t.Managed {
 		return blocked(p, BlockNotManaged, "route is not managed"), nil

@@ -15,10 +15,10 @@ import (
 	"strconv"
 	"strings"
 
-	defaults "devproxy/templates"
+	defaults "caddykit/templates"
 
-	"devproxy/internal/config"
-	"devproxy/internal/model"
+	"caddykit/internal/config"
+	"caddykit/internal/model"
 	"gopkg.in/yaml.v3"
 )
 

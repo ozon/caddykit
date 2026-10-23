@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"devproxy/internal/model"
+	"caddykit/internal/model"
 )
 
 const SchemaVersion = 1
@@ -22,7 +22,7 @@ const (
 	FileState     = "state.json"
 	FileUndo      = "undo.json"
 	FileJournal   = "opjournal.json"
-	FileInstance  = "devproxy.lock"
+	FileInstance  = "caddykit.lock"
 	FileStateLock = "state.lock"
 	FileIPCToken  = "ipc.token"
 )
@@ -263,13 +263,13 @@ func (s *Store) Token() (string, error) {
 	return tok, nil
 }
 
-// SocketPath returns $XDG_RUNTIME_DIR/devproxy.sock or a socket inside the
+// SocketPath returns $XDG_RUNTIME_DIR/caddykit.sock or a socket inside the
 // data directory as fallback.
 func SocketPath(dataDir string) string {
 	if rt := os.Getenv("XDG_RUNTIME_DIR"); rt != "" {
 		if st, err := os.Stat(rt); err == nil && st.IsDir() {
-			return filepath.Join(rt, "devproxy.sock")
+			return filepath.Join(rt, "caddykit.sock")
 		}
 	}
-	return filepath.Join(dataDir, "devproxy.sock")
+	return filepath.Join(dataDir, "caddykit.sock")
 }

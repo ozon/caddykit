@@ -78,7 +78,7 @@ die Tests laufen unabhängig davon.
 ## Manuelle/E2E-Prüfungen
 
 - **Playwright-Smoke** (optional, benötigt laufende Instanz):
-  `DEVPROXY_E2E_BASE_URL=http://localhost:<backend-port> DEVPROXY_E2E_PASSWORD=<startpw> npm run test:e2e`
+  `CADDYKIT_E2E_BASE_URL=http://localhost:<backend-port> CADDYKIT_E2E_PASSWORD=<startpw> npm run test:e2e`
 - **Performance** (Chrome, lokal, Produktionsbuild):
   - JS gesamt ≈ 200 KB gzip, CSS ≈ 6 KB gzip, Fonts ≈ 88 KB → ≈ 293 KB < 400 KB.
   - First Contentful Paint: 104-108 ms (Median 108 ms aus 5 Läufen) < 500 ms, gemessen am Produktionsbuild vom 2026-10-23.
@@ -89,8 +89,8 @@ die Tests laufen unabhängig davon.
 ## Nicht automatisiert / bewusst offen
 
 - Ein echter Browser-E2E-Lauf ist nicht Teil von `make integration` (benötigt
-  eine laufende Caddy-/devproxy-Instanz und Browser-Binaries). Der Test ist
-  vorhanden und überspringt sich ohne `DEVPROXY_E2E_*`-Variablen.
+  eine laufende Caddy-/caddykit-Instanz und Browser-Binaries). Der Test ist
+  vorhanden und überspringt sich ohne `CADDYKIT_E2E_*`-Variablen.
   Zuletzt geprüft: 2/2 grün gegen eine Wegwerf-Caddy-Instanz (2026-10-23).
 - `golangci-lint` läuft nur, wenn installiert; `go vet` ist Pflicht.
 - Last-/Mehrbenutzertests sind kein MVP-Ziel (ein Entwickler, ein Server).

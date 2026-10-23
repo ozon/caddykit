@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"devproxy/internal/config"
+	"caddykit/internal/config"
 	"github.com/google/uuid"
 )
 
@@ -56,7 +56,7 @@ const (
 )
 
 // NewID returns the identity for newly managed routes (spec §2.1).
-func NewID() string { return "devproxy/r/" + uuid.Must(uuid.NewV7()).String() }
+func NewID() string { return "caddykit/r/" + uuid.Must(uuid.NewV7()).String() }
 
 // Decode parses a route with json.Number preserved.
 func Decode(data []byte) (Route, error) {

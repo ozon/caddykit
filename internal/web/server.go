@@ -18,10 +18,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"devproxy/internal/caddy"
-	"devproxy/internal/core"
-	"devproxy/internal/model"
-	"devproxy/internal/state"
+	"caddykit/internal/caddy"
+	"caddykit/internal/core"
+	"caddykit/internal/model"
+	"caddykit/internal/state"
 )
 
 // The all: prefix is required: SvelteKit puts assets in _app/, and plain
@@ -30,7 +30,7 @@ import (
 //go:embed all:dist
 var distFS embed.FS
 
-var ErrInstance = errors.New("another devproxy instance is running")
+var ErrInstance = errors.New("another caddykit instance is running")
 
 type Options struct {
 	CaddyAdmin        string
@@ -68,7 +68,7 @@ func Run(ctx context.Context, opts Options) error {
 		opts.Out = os.Stdout
 	}
 	if opts.Logger == nil {
-		opts.Logger = log.New(os.Stderr, "devproxy: ", log.LstdFlags)
+		opts.Logger = log.New(os.Stderr, "caddykit: ", log.LstdFlags)
 	}
 	opts.Logger.Printf("starting: data dir %s; caddy admin %s; server %q", opts.DataDir, opts.CaddyAdmin, opts.Server)
 	if err := ensureDataDir(opts.DataDir); err != nil {
@@ -131,7 +131,7 @@ func Run(ctx context.Context, opts Options) error {
 	}
 	s.selfCreated = created
 	if created {
-		opts.Logger.Printf("created devproxy/self route for %s on 127.0.0.1:%d", opts.Domain, port)
+		opts.Logger.Printf("created caddykit/self route for %s on 127.0.0.1:%d", opts.Domain, port)
 	}
 	cleanupAll := func() {
 		cleanupListener()
@@ -174,7 +174,7 @@ func Run(ctx context.Context, opts Options) error {
 	}()
 
 	opts.Logger.Printf("backend listening on %s", ln.Addr().String())
-	_, _ = fmt.Fprintf(opts.Out, "devproxy web: https://%s\nStartpasswort: %s\n", opts.Domain, auth.Password())
+	_, _ = fmt.Fprintf(opts.Out, "caddykit web: https://%s\nStartpasswort: %s\n", opts.Domain, auth.Password())
 
 	reconcileStop := make(chan struct{})
 	reconcileDone := make(chan struct{})
@@ -232,7 +232,7 @@ func (s *Server) shutdown() {
 	// Own route becomes a static 503. Failure is only a warning, never
 	// reported as success (spec §6.3).
 	if err := s.setSelf503(ctx); err != nil {
-		s.opts.Logger.Printf("warning: could not switch devproxy/self to 503: %v", err)
+		s.opts.Logger.Printf("warning: could not switch caddykit/self to 503: %v", err)
 	}
 	s.opts.Logger.Printf("shutdown complete")
 }
@@ -348,7 +348,7 @@ func (s *Server) self503() model.Route {
 	return model.Route{
 		"@id":      core.SelfID,
 		"match":    []any{map[string]any{"host": []any{s.opts.Domain}}},
-		"handle":   []any{map[string]any{"handler": "static_response", "status_code": 503, "body": "devproxy web is stopped\n"}},
+		"handle":   []any{map[string]any{"handler": "static_response", "status_code": 503, "body": "caddykit web is stopped\n"}},
 		"terminal": true,
 	}
 }
@@ -413,7 +413,7 @@ func (s *Server) putSelf(ctx context.Context, desired model.Route) (bool, error)
 		for i := range routes {
 			if routes[i].ID() == core.SelfID {
 				if idx >= 0 {
-					return false, errors.New("multiple devproxy/self routes exist; remove the duplicate first")
+					return false, errors.New("multiple caddykit/self routes exist; remove the duplicate first")
 				}
 				idx = i
 			}
@@ -434,7 +434,7 @@ func (s *Server) putSelf(ctx context.Context, desired model.Route) (bool, error)
 		}
 		return created, nil
 	}
-	return false, errors.New("could not write devproxy/self after 3 attempts")
+	return false, errors.New("could not write caddykit/self after 3 attempts")
 }
 
 func (s *Server) removeSelfRoute(ctx context.Context) error {
@@ -463,7 +463,7 @@ func (s *Server) removeSelfRoute(ctx context.Context) error {
 		}
 		return nil
 	}
-	return errors.New("could not remove devproxy/self")
+	return errors.New("could not remove caddykit/self")
 }
 
 func (s *Server) setSelf503(ctx context.Context) error {

@@ -7,8 +7,8 @@ import (
 )
 
 func TestEnvThenFlagPrecedence(t *testing.T) {
-	t.Setenv("DEVPROXY_CADDY_ADMIN", "http://127.0.0.1:2020")
-	t.Setenv("DEVPROXY_RECONCILE_INTERVAL", "12s")
+	t.Setenv("CADDYKIT_CADDY_ADMIN", "http://127.0.0.1:2020")
+	t.Setenv("CADDYKIT_RECONCILE_INTERVAL", "12s")
 	c := FromEnv()
 	if c.CaddyAdmin != "http://127.0.0.1:2020" || c.ReconcileInterval != 12*time.Second {
 		t.Fatalf("env not applied: %+v", c)

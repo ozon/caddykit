@@ -14,8 +14,8 @@ import (
 	"testing"
 	"time"
 
-	"devproxy/internal/model"
-	"devproxy/internal/state"
+	"caddykit/internal/model"
+	"caddykit/internal/state"
 )
 
 func TestSequence(t *testing.T) {
@@ -264,7 +264,7 @@ func TestSequence(t *testing.T) {
 	}
 
 	// Second web process is refused with exit code 6.
-	second := exec.Command(devproxyBinary(t), "web", "--domain", "it.test", "--caddy-admin", box.admin,
+	second := exec.Command(caddykitBinary(t), "web", "--domain", "it.test", "--caddy-admin", box.admin,
 		"--server", "srv0", "--data-dir", dataDir, "--reconcile-interval", "2s")
 	second.Env = append(second.Environ(), "XDG_RUNTIME_DIR="+t.TempDir())
 	out, err := second.CombinedOutput()
@@ -396,14 +396,14 @@ func routeDial(t *testing.T, box *caddyBox, id string) string {
 func TestSecurityAndStartup(t *testing.T) {
 	t.Run("remote admin guard", func(t *testing.T) {
 		dir := t.TempDir()
-		cmd := exec.Command(devproxyBinary(t), "routes", "list",
+		cmd := exec.Command(caddykitBinary(t), "routes", "list",
 			"--caddy-admin", "http://10.255.255.1:2019", "--data-dir", dir)
 		out, err := cmd.CombinedOutput()
 		exitErr, ok := err.(*exec.ExitError)
 		if !ok || exitErr.ExitCode() != 2 {
 			t.Fatalf("remote admin must exit 2: err=%v out=%s", err, out)
 		}
-		cmd = exec.Command(devproxyBinary(t), "routes", "list", "--allow-remote-admin",
+		cmd = exec.Command(caddykitBinary(t), "routes", "list", "--allow-remote-admin",
 			"--caddy-admin", "http://10.255.255.1:2019", "--data-dir", dir)
 		out, err = cmd.CombinedOutput()
 		exitErr, ok = err.(*exec.ExitError)
@@ -417,7 +417,7 @@ func TestSecurityAndStartup(t *testing.T) {
 			_, _ = w.Write([]byte(`{}`))
 		}))
 		defer srv.Close()
-		cmd := exec.Command(devproxyBinary(t), "web", "--domain", "etag.test",
+		cmd := exec.Command(caddykitBinary(t), "web", "--domain", "etag.test",
 			"--caddy-admin", srv.URL, "--data-dir", t.TempDir(), "--reconcile-interval", "2s")
 		out, err := cmd.CombinedOutput()
 		if err == nil {
@@ -436,7 +436,7 @@ func TestSecurityAndStartup(t *testing.T) {
 			"terminal": true,
 		}
 		box.setRoutes(t, []map[string]any{foreign})
-		cmd := exec.Command(devproxyBinary(t), "web", "--domain", "occupied.test",
+		cmd := exec.Command(caddykitBinary(t), "web", "--domain", "occupied.test",
 			"--caddy-admin", box.admin, "--server", "srv0",
 			"--data-dir", t.TempDir(), "--reconcile-interval", "2s")
 		out, err := cmd.CombinedOutput()

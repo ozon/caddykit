@@ -10,17 +10,17 @@ import (
 	"os"
 	"time"
 
-	"devproxy/internal/caddy"
-	"devproxy/internal/config"
-	"devproxy/internal/core"
-	"devproxy/internal/ipc"
-	"devproxy/internal/model"
-	"devproxy/internal/state"
-	"devproxy/internal/templates"
+	"caddykit/internal/caddy"
+	"caddykit/internal/config"
+	"caddykit/internal/core"
+	"caddykit/internal/ipc"
+	"caddykit/internal/model"
+	"caddykit/internal/state"
+	"caddykit/internal/templates"
 )
 
 var (
-	ErrInstance     = errors.New("another devproxy instance is running")
+	ErrInstance     = errors.New("another caddykit instance is running")
 	ErrAuth         = errors.New("authentication or IPC failed")
 	ErrCaddyUnreach = errors.New("caddy admin API is unreachable")
 )

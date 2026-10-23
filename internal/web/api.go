@@ -10,11 +10,11 @@ import (
 	"strconv"
 	"time"
 
-	"devproxy/internal/core"
-	"devproxy/internal/model"
-	"devproxy/internal/render"
-	"devproxy/internal/state"
-	"devproxy/internal/templates"
+	"caddykit/internal/core"
+	"caddykit/internal/model"
+	"caddykit/internal/render"
+	"caddykit/internal/state"
+	"caddykit/internal/templates"
 )
 
 type ctxKey int
@@ -80,7 +80,7 @@ func (s *Server) writeCoreError(w http.ResponseWriter, err error) {
 func (s *Server) guard(write bool, h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if s.draining.Load() {
-			writeError(w, http.StatusServiceUnavailable, "DRAINING", "devproxy is shutting down", "", nil)
+			writeError(w, http.StatusServiceUnavailable, "DRAINING", "caddykit is shutting down", "", nil)
 			return
 		}
 		tok := r.Header.Get("X-Devproxy-Token")
@@ -92,7 +92,7 @@ func (s *Server) guard(write bool, h http.HandlerFunc) http.HandlerFunc {
 			h(w, r)
 			return
 		}
-		c, err := r.Cookie("devproxy_session")
+		c, err := r.Cookie("caddykit_session")
 		if err != nil {
 			writeError(w, http.StatusUnauthorized, "UNAUTHORIZED", "login required", "", nil)
 			return
@@ -162,11 +162,11 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	}
 	s.opts.Logger.Printf("login succeeded for %s", clientIP(r))
 	http.SetCookie(w, &http.Cookie{
-		Name: "devproxy_session", Value: tok, Path: "/",
+		Name: "caddykit_session", Value: tok, Path: "/",
 		HttpOnly: true, Secure: true, SameSite: http.SameSiteStrictMode,
 	})
 	http.SetCookie(w, &http.Cookie{
-		Name: "devproxy_csrf", Value: csrf, Path: "/",
+		Name: "caddykit_csrf", Value: csrf, Path: "/",
 		Secure: true, SameSite: http.SameSiteStrictMode,
 	})
 	writeJSON(w, http.StatusOK, map[string]any{"csrf": csrf, "domain": s.opts.Domain})
@@ -182,13 +182,13 @@ func (s *Server) logout(w http.ResponseWriter, r *http.Request) {
 	if tok, ok := r.Context().Value(ctxSession).(string); ok {
 		s.auth.Logout(tok)
 	}
-	clearCookie(w, "devproxy_session")
-	clearCookie(w, "devproxy_csrf")
+	clearCookie(w, "caddykit_session")
+	clearCookie(w, "caddykit_csrf")
 	writeJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
 func clearCookie(w http.ResponseWriter, name string) {
-	http.SetCookie(w, &http.Cookie{Name: name, Value: "", Path: "/", MaxAge: -1, Secure: true, SameSite: http.SameSiteStrictMode, HttpOnly: name == "devproxy_session"})
+	http.SetCookie(w, &http.Cookie{Name: name, Value: "", Path: "/", MaxAge: -1, Secure: true, SameSite: http.SameSiteStrictMode, HttpOnly: name == "caddykit_session"})
 }
 
 func (s *Server) rotatePassword(w http.ResponseWriter, r *http.Request) {

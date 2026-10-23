@@ -1,3 +1,3 @@
-module devproxy/webui
+module caddykit/webui
 
 go 1.23

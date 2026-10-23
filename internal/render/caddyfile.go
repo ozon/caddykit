@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"devproxy/internal/model"
+	"caddykit/internal/model"
 )
 
 const maxDepth = 32

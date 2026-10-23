@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"devproxy/internal/model"
+	"caddykit/internal/model"
 )
 
 func mustRoute(t *testing.T, src string) model.Route {

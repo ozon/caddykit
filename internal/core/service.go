@@ -15,12 +15,12 @@ import (
 	"sync"
 	"time"
 
-	"devproxy/internal/caddy"
-	"devproxy/internal/model"
-	"devproxy/internal/state"
+	"caddykit/internal/caddy"
+	"caddykit/internal/model"
+	"caddykit/internal/state"
 )
 
-const SelfID = "devproxy/self"
+const SelfID = "caddykit/self"
 
 var (
 	ErrNotFound       = errors.New("route not found")
@@ -30,7 +30,7 @@ var (
 	ErrStale          = errors.New("preview is stale; review the refreshed diff")
 	ErrNoUndo         = errors.New("no undo step available")
 	ErrUndoBlocked    = errors.New("undo is not safe")
-	ErrSelfProtected  = errors.New("the devproxy/self route is protected")
+	ErrSelfProtected  = errors.New("the caddykit/self route is protected")
 	ErrJournalOpen    = errors.New("an operation journal is open")
 	ErrMissingContext = errors.New("missing Caddy context")
 	ErrServerMismatch = errors.New("state belongs to a different Caddy server")
@@ -253,7 +253,7 @@ func (s *Service) target(ctx context.Context, routes []model.Route, st *state.St
 	if len(lower) >= 8 && isHexPrefix(lower) {
 		var matches []string
 		for id := range st.Routes {
-			if strings.HasPrefix(strings.ToLower(strings.TrimPrefix(id, "devproxy/r/")), lower) ||
+			if strings.HasPrefix(strings.ToLower(strings.TrimPrefix(id, "caddykit/r/")), lower) ||
 				strings.HasPrefix(strings.ToLower(id), lower) {
 				matches = append(matches, id)
 			}

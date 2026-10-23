@@ -7,9 +7,9 @@ import (
 	"sort"
 	"time"
 
-	"devproxy/internal/caddy"
-	"devproxy/internal/model"
-	"devproxy/internal/state"
+	"caddykit/internal/caddy"
+	"caddykit/internal/model"
+	"caddykit/internal/state"
 )
 
 type Conflict struct {

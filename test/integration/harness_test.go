@@ -48,16 +48,16 @@ func freePort(t *testing.T) int {
 	return 0
 }
 
-func devproxyBinary(t *testing.T) string {
+func caddykitBinary(t *testing.T) string {
 	t.Helper()
 	buildOnce.Do(func() {
-		dir, err := os.MkdirTemp("", "devproxy-it-bin-*")
+		dir, err := os.MkdirTemp("", "caddykit-it-bin-*")
 		if err != nil {
 			buildErr = err
 			return
 		}
-		binary = filepath.Join(dir, "devproxy")
-		cmd := exec.Command("go", "build", "-o", binary, "./cmd/devproxy")
+		binary = filepath.Join(dir, "caddykit")
+		cmd := exec.Command("go", "build", "-o", binary, "./cmd/caddykit")
 		cmd.Dir = repoRoot()
 		out, err := cmd.CombinedOutput()
 		if err != nil {
@@ -112,7 +112,7 @@ func startCaddy(t *testing.T) *caddyBox {
 	if err := os.WriteFile(seedFile, []byte(seed), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	name := fmt.Sprintf("devproxy-it-%d-%d", os.Getpid(), adminPort)
+	name := fmt.Sprintf("caddykit-it-%d-%d", os.Getpid(), adminPort)
 	cmd := exec.Command("docker", "run", "-d", "--name", name, "--network", "host",
 		"-v", seedFile+":/seed.json:ro", image, "caddy", "run", "--config", "/seed.json")
 	if out, err := cmd.CombinedOutput(); err != nil {
@@ -191,7 +191,7 @@ func (c *caddyBox) findRoute(routes []map[string]any, id string) map[string]any 
 func (c *caddyBox) selfRoute(t *testing.T) map[string]any {
 	t.Helper()
 	for _, r := range c.routes(t) {
-		if r["@id"] == "devproxy/self" {
+		if r["@id"] == "caddykit/self" {
 			return r
 		}
 	}
@@ -237,7 +237,7 @@ func startWeb(t *testing.T, box *caddyBox, domain, dataDir string) *webProc {
 	w := &webProc{stdout: &syncBuf{}, stderr: &syncBuf{}, runDir: runDir, done: make(chan error, 1)}
 	args := []string{"web", "--domain", domain, "--caddy-admin", box.admin, "--server", "srv0",
 		"--data-dir", dataDir, "--reconcile-interval", "2s"}
-	w.cmd = exec.Command(devproxyBinary(t), args...)
+	w.cmd = exec.Command(caddykitBinary(t), args...)
 	w.cmd.Env = append(os.Environ(), "XDG_RUNTIME_DIR="+runDir)
 	w.cmd.Stdout = w.stdout
 	w.cmd.Stderr = w.stderr
@@ -274,7 +274,7 @@ func startWeb(t *testing.T, box *caddyBox, domain, dataDir string) *webProc {
 // cli runs the same binary against the running web process over IPC.
 func (w *webProc) cli(t *testing.T, dataDir string, args ...string) (string, error) {
 	t.Helper()
-	cmd := exec.Command(devproxyBinary(t), args...)
+	cmd := exec.Command(caddykitBinary(t), args...)
 	cmd.Env = append(os.Environ(), "XDG_RUNTIME_DIR="+w.runDir)
 	out, err := cmd.CombinedOutput()
 	return string(out), err
@@ -320,7 +320,7 @@ func (a *apiClient) request(method, path string, body any, withCSRF bool) (int, 
 		req.Header.Set("Content-Type", "application/json")
 	}
 	if a.session != "" {
-		req.Header.Set("Cookie", "devproxy_session="+a.session)
+		req.Header.Set("Cookie", "caddykit_session="+a.session)
 	}
 	if withCSRF && a.csrf != "" {
 		req.Header.Set("X-CSRF-Token", a.csrf)
@@ -341,7 +341,7 @@ func (a *apiClient) login(password string) {
 		a.t.Fatalf("login failed: %d %s", status, body)
 	}
 	for _, c := range (&http.Response{Header: hdr}).Cookies() {
-		if c.Name == "devproxy_session" {
+		if c.Name == "caddykit_session" {
 			if !c.Secure || !c.HttpOnly {
 				a.t.Fatalf("session cookie is not Secure+HttpOnly: %+v", c)
 			}

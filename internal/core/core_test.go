@@ -11,12 +11,12 @@ import (
 	"testing"
 	"time"
 
-	"devproxy/internal/caddy"
-	"devproxy/internal/model"
-	"devproxy/internal/state"
+	"caddykit/internal/caddy"
+	"caddykit/internal/model"
+	"caddykit/internal/state"
 )
 
-// fakeCaddy emulates the parts of the admin API used by devproxy.
+// fakeCaddy emulates the parts of the admin API used by caddykit.
 type fakeCaddy struct {
 	mu            sync.Mutex
 	routes        []model.Route
@@ -358,7 +358,7 @@ func TestJournalRecoveryMatrix(t *testing.T) {
 	ctx := context.Background()
 	base := model.Spec{Host: "a.example.com", Upstream: "h:1"}.Build()
 	newRoute := model.Spec{Host: "a.example.com", Upstream: "h:2"}.Build()
-	newRoute["@id"] = "devproxy/r/01920000-0000-7000-8000-000000000001"
+	newRoute["@id"] = "caddykit/r/01920000-0000-7000-8000-000000000001"
 	entry := &state.Entry{ID: newRoute.ID(), Snapshot: newRoute, Source: "create", AdoptedAt: time.Now()}
 
 	cases := []struct {

@@ -20,7 +20,7 @@
 	});
 </script>
 
-<svelte:head><title>Templates · devproxy</title></svelte:head>
+<svelte:head><title>Templates · caddykit</title></svelte:head>
 
 <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
 	<div>

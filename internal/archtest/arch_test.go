@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-// TestNoCaddyfileOrServiceControl enforces acceptance criterion 3: devproxy
+// TestNoCaddyfileOrServiceControl enforces acceptance criterion 3: caddykit
 // never reads or applies a Caddyfile and never controls the Caddy service.
 // The read-only Caddyfile *preview* is allowed; it only formats route JSON.
 func TestNoCaddyfileOrServiceControl(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"devproxy/internal/model"
+	"caddykit/internal/model"
 )
 
 func TestOperationLogApplyUndoAndFailure(t *testing.T) {

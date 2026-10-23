@@ -138,7 +138,7 @@
 	});
 </script>
 
-<svelte:head><title>Routes · devproxy</title></svelte:head>
+<svelte:head><title>Routes · caddykit</title></svelte:head>
 
 <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
 	<div>
@@ -228,7 +228,7 @@
 						<td>
 							<span class="mono text-[12px]">{r.host || '—'}</span>
 							{#if r.id}
-								<span class="faint mono ml-2 hidden text-[10px] xl:inline">{r.id.replace('devproxy/r/', '')}</span>
+								<span class="faint mono ml-2 hidden text-[10px] xl:inline">{r.id.replace('caddykit/r/', '')}</span>
 							{/if}
 						</td>
 						<td class="mono text-[11.5px] text-[var(--muted)]">

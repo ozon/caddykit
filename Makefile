@@ -18,8 +18,8 @@ frontend:
 
 build: frontend
 	mkdir -p dist
-	GOOS=linux GOARCH=amd64 $(GO) build -trimpath -ldflags "$(LDFLAGS)" -o dist/devproxy-linux-amd64 ./cmd/devproxy
-	GOOS=linux GOARCH=arm64 $(GO) build -trimpath -ldflags "$(LDFLAGS)" -o dist/devproxy-linux-arm64 ./cmd/devproxy
+	GOOS=linux GOARCH=amd64 $(GO) build -trimpath -ldflags "$(LDFLAGS)" -o dist/caddykit-linux-amd64 ./cmd/caddykit
+	GOOS=linux GOARCH=arm64 $(GO) build -trimpath -ldflags "$(LDFLAGS)" -o dist/caddykit-linux-arm64 ./cmd/caddykit
 
 test:
 	$(GO) test $(GO_PKGS)

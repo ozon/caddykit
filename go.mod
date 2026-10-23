@@ -1,4 +1,4 @@
-module devproxy
+module caddykit
 
 go 1.23
 

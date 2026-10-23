@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-// These tests need a running devproxy web process and the start password.
+// These tests need a running caddykit web process and the start password.
 // Example:
-//   DEVPROXY_E2E_BASE_URL=http://localhost:<backend-port> \
-//   DEVPROXY_E2E_PASSWORD=<start password> npm run test:e2e
-const base = process.env.DEVPROXY_E2E_BASE_URL;
-const password = process.env.DEVPROXY_E2E_PASSWORD;
+//   CADDYKIT_E2E_BASE_URL=http://localhost:<backend-port> \
+//   CADDYKIT_E2E_PASSWORD=<start password> npm run test:e2e
+const base = process.env.CADDYKIT_E2E_BASE_URL;
+const password = process.env.CADDYKIT_E2E_PASSWORD;
 
-test.skip(!base || !password, 'set DEVPROXY_E2E_BASE_URL and DEVPROXY_E2E_PASSWORD');
+test.skip(!base || !password, 'set CADDYKIT_E2E_BASE_URL and CADDYKIT_E2E_PASSWORD');
 
 test('login, dashboard, live preview, conflicts, undo', async ({ page }) => {
 	await page.goto('/login');

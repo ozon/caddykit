@@ -46,7 +46,7 @@
 	}
 </script>
 
-<svelte:head><title>New advanced route · devproxy</title></svelte:head>
+<svelte:head><title>New advanced route · caddykit</title></svelte:head>
 
 <div class="mb-4">
 	<a href="/routes/new" class="muted flex items-center gap-1 text-[11.5px] hover:text-[var(--fg)]"
@@ -96,7 +96,7 @@
 	<div class="flex flex-col gap-3 lg:sticky lg:top-16">
 		<CaddyfilePreview route={draft} />
 		<div class="panel px-3 py-2 text-[11px] text-[var(--muted)]">
-			The preview is read-only. Caddy accepts only JSON from devproxy; the Caddyfile view is never applied.
+			The preview is read-only. Caddy accepts only JSON from caddykit; the Caddyfile view is never applied.
 		</div>
 	</div>
 </div>

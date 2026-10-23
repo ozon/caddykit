@@ -41,7 +41,7 @@
 	onMount(load);
 </script>
 
-<svelte:head><title>Undo · devproxy</title></svelte:head>
+<svelte:head><title>Undo · caddykit</title></svelte:head>
 
 <div class="mb-4">
 	<h1 class="text-[18px] font-semibold tracking-tight">Undo</h1>

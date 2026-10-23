@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"devproxy/internal/config"
+	"caddykit/internal/config"
 )
 
 var (

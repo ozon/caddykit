@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"devproxy/internal/model"
+	"caddykit/internal/model"
 )
 
 func TestStoreRoundtripAndModes(t *testing.T) {

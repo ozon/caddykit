@@ -257,7 +257,7 @@ func TestNormalizeIdempotentRandom(t *testing.T) {
 
 func TestNewIDFormat(t *testing.T) {
 	id := NewID()
-	if len(id) < len("devproxy/r/")+36 || id[:len("devproxy/r/")] != "devproxy/r/" {
+	if len(id) < len("caddykit/r/")+36 || id[:len("caddykit/r/")] != "caddykit/r/" {
 		t.Fatalf("bad id %q", id)
 	}
 }

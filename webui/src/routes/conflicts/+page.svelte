@@ -101,7 +101,7 @@
 	onMount(load);
 </script>
 
-<svelte:head><title>Conflicts · devproxy</title></svelte:head>
+<svelte:head><title>Conflicts · caddykit</title></svelte:head>
 
 <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
 	<div>

@@ -7,7 +7,7 @@ existiert, ist die Entscheidung hier dokumentiert.
 
 ## D1 — `/id/<id>` ist mit der geforderten ID-Form nicht adressierbar
 
-**Spec:** `@id = devproxy/r/<uuidv7>`, Einzelzugriff bevorzugt über `/id/<id>`.
+**Spec:** `@id = caddykit/r/<uuidv7>`, Einzelzugriff bevorzugt über `/id/<id>`.
 **Befund:** Caddy ≥ 2.10 wertet bei `/id/` nur das **erste** Pfadsegment als ID
 (`admin.go`, `handleConfigID`: `id := parts[2]`). Eine ID mit `/` ist darüber
 nicht erreichbar; `%2F` wird von `r.URL.Path` dekodiert.
@@ -81,7 +81,7 @@ internationale Domains braucht, kann Punycode (`xn--…`) eingeben. Upgrade-Pfad
 **Spec:** `web --domain` (UI-Domain) und `routes add --domain` (Routen-Host).
 **Entscheidung:** `web` registriert `--domain`; Routen-/Konflikt-/Undo-/
 Template-Befehle registrieren gemeinsame Optionen ohne `--domain` und verwenden
-`--domain` für den Routen-Host. `DEVPROXY_DOMAIN` wird bei Routen-Befehlen
+`--domain` für den Routen-Host. `CADDYKIT_DOMAIN` wird bei Routen-Befehlen
 ignoriert.
 
 ## D9 — Restore-Kollision: nur frühere terminale Routen blockieren
@@ -110,7 +110,7 @@ markiert).
 **Spec-UI:** Status zeigt „Serverversion“.
 **Befund:** Die Admin-API liefert keine Caddy-Version; `caddy version` ist per
 Produktgrenze verboten.
-**Entscheidung:** Angezeigt werden devproxy-Version, Server-Name und
+**Entscheidung:** Angezeigt werden caddykit-Version, Server-Name und
 Caddy-Erreichbarkeit. Die geprüfte Mindestversion ist 2.8.0 (Etag-Header).
 
 ## D12 — SvelteKit 3: `$lib`-Alias ist deprecated
@@ -233,7 +233,7 @@ im strukturierten Editor ebenfalls bearbeitbar.
 Felder werden nicht verworfen. Der Server validiert den Baum rekursiv
 (`ValidateJSONRoute`, Tiefenlimit 50), das Insecure-Gate und die
 Kollisionsprüfung gelten unverändert. Fremde Routen werden beim Speichern
-adoptiert; `devproxy/self` bleibt gesperrt. Die kanonische `Spec`-Form und
+adoptiert; `caddykit/self` bleibt gesperrt. Die kanonische `Spec`-Form und
 `JSON_ONLY` bleiben für CLI, Quick-Create und die Listenklassifikation
 bestehen.
 **Kosten:** Der Editor kann Routen erzeugen, die Caddy erst beim Apply
