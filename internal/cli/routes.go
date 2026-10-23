@@ -158,7 +158,10 @@ func runRoutes(args []string) error {
 	}
 	sub := args[0]
 	rest := args[1:]
-	cfg := config.FromEnv()
+	cfg, err := config.FromEnv()
+	if err != nil {
+		return &usageError{err}
+	}
 	fs := flag.NewFlagSet("routes "+sub, flag.ContinueOnError)
 	cfg.RegisterCommon(fs)
 	var f formFlags

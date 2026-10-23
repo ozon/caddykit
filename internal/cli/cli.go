@@ -124,7 +124,10 @@ func codeFor(err error) int {
 }
 
 func runWeb(args []string, version string) error {
-	cfg := config.FromEnv()
+	cfg, err := config.FromEnv()
+	if err != nil {
+		return &usageError{err}
+	}
 	fs := flag.NewFlagSet("web", flag.ContinueOnError)
 	cfg.Register(fs)
 	if _, err := parseInterspersed(fs, args); err != nil {
@@ -170,7 +173,10 @@ func runConflicts(args []string) error {
 	if len(args) == 0 {
 		return &usageError{errors.New("conflicts needs list or resolve")}
 	}
-	cfg := config.FromEnv()
+	cfg, err := config.FromEnv()
+	if err != nil {
+		return &usageError{err}
+	}
 	fs := flag.NewFlagSet("conflicts", flag.ContinueOnError)
 	cfg.RegisterCommon(fs)
 	var jsonOut, yes bool
@@ -232,7 +238,10 @@ func runConflicts(args []string) error {
 }
 
 func runUndo(args []string) error {
-	cfg := config.FromEnv()
+	cfg, err := config.FromEnv()
+	if err != nil {
+		return &usageError{err}
+	}
 	fs := flag.NewFlagSet("undo", flag.ContinueOnError)
 	cfg.RegisterCommon(fs)
 	var yes, jsonOut bool
@@ -295,7 +304,10 @@ func runTemplates(args []string) error {
 	if len(args) == 0 {
 		return &usageError{errors.New("templates needs list or show")}
 	}
-	cfg := config.FromEnv()
+	cfg, err := config.FromEnv()
+	if err != nil {
+		return &usageError{err}
+	}
 	fs := flag.NewFlagSet("templates", flag.ContinueOnError)
 	cfg.RegisterCommon(fs)
 	var jsonOut bool

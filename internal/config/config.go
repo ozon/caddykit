@@ -1,16 +1,20 @@
 // Package config resolves caddykit configuration with the precedence
-// CLI argument > environment variable > default (spec §1.1).
+// CLI argument > environment variable > config file > default (spec §1.1).
 package config
 
 import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
+	"io/fs"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"gopkg.in/yaml.v3"
 
 	"caddykit/internal/logging"
 )
@@ -35,31 +39,123 @@ type Config struct {
 	LogFile           string
 }
 
-// FromEnv builds defaults, taking environment variables into account.
-func FromEnv() Config {
-	c := Config{
-		CaddyAdmin:        env("CADDYKIT_CADDY_ADMIN", DefaultCaddyAdmin),
-		Domain:            os.Getenv("CADDYKIT_DOMAIN"),
-		DataDir:           env("CADDYKIT_DATA_DIR", filepath.Join(xdg("XDG_DATA_HOME", ".local/share"), "caddykit")),
-		TemplateDir:       env("CADDYKIT_TEMPLATE_DIR", filepath.Join(xdg("XDG_CONFIG_HOME", ".config"), "caddykit", "templates")),
+// fileConfig is the YAML schema of $XDG_CONFIG_HOME/caddykit/config.yaml.
+// Security-relevant flags (allow_remote_admin, allow_insecure) are absent on
+// purpose: unknown keys are rejected, so they cannot be set from the file.
+type fileConfig struct {
+	Domain            string `yaml:"domain"`
+	CaddyAdmin        string `yaml:"caddy_admin"`
+	DataDir           string `yaml:"data_dir"`
+	TemplateDir       string `yaml:"template_dir"`
+	ReconcileInterval string `yaml:"reconcile_interval"`
+	Server            string `yaml:"server"`
+	LogLevel          string `yaml:"log_level"`
+	LogFile           string `yaml:"log_file"`
+}
+
+// Defaults returns the built-in configuration.
+func Defaults() Config {
+	return Config{
+		CaddyAdmin:        DefaultCaddyAdmin,
+		DataDir:           filepath.Join(xdg("XDG_DATA_HOME", ".local/share"), "caddykit"),
+		TemplateDir:       filepath.Join(xdg("XDG_CONFIG_HOME", ".config"), "caddykit", "templates"),
 		ReconcileInterval: DefaultReconcileInterval,
-		Server:            os.Getenv("CADDYKIT_SERVER"),
-		LogLevel:          os.Getenv("CADDYKIT_LOG_LEVEL"),
-		LogFile:           os.Getenv("CADDYKIT_LOG_FILE"),
+	}
+}
+
+// ConfigPath is where FromEnv looks for the settings file.
+func configPath() string {
+	return filepath.Join(xdg("XDG_CONFIG_HOME", ".config"), "caddykit", "config.yaml")
+}
+
+// FromEnv builds the configuration from defaults, the settings file, and the
+// environment, in that order.
+func FromEnv() (Config, error) {
+	c := Defaults()
+	if err := c.applyFile(configPath()); err != nil {
+		return Config{}, err
+	}
+	c.applyEnv()
+	return c, nil
+}
+
+func (c *Config) applyFile(path string) error {
+	f, err := os.Open(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("config file %s: %w", path, err)
+	}
+	defer func() { _ = f.Close() }()
+
+	dec := yaml.NewDecoder(f)
+	dec.KnownFields(true)
+	var fc fileConfig
+	if err := dec.Decode(&fc); err != nil {
+		if errors.Is(err, io.EOF) {
+			return nil // empty file
+		}
+		return fmt.Errorf("config file %s: %w", path, err)
+	}
+	if fc.Domain != "" {
+		c.Domain = fc.Domain
+	}
+	if fc.CaddyAdmin != "" {
+		c.CaddyAdmin = fc.CaddyAdmin
+	}
+	if fc.DataDir != "" {
+		c.DataDir = fc.DataDir
+	}
+	if fc.TemplateDir != "" {
+		c.TemplateDir = fc.TemplateDir
+	}
+	if fc.Server != "" {
+		c.Server = fc.Server
+	}
+	if fc.LogLevel != "" {
+		c.LogLevel = fc.LogLevel
+	}
+	if fc.LogFile != "" {
+		c.LogFile = fc.LogFile
+	}
+	if fc.ReconcileInterval != "" {
+		d, err := time.ParseDuration(fc.ReconcileInterval)
+		if err != nil {
+			return fmt.Errorf("config file %s: reconcile_interval: %w", path, err)
+		}
+		c.ReconcileInterval = d
+	}
+	return nil
+}
+
+func (c *Config) applyEnv() {
+	if v := os.Getenv("CADDYKIT_CADDY_ADMIN"); v != "" {
+		c.CaddyAdmin = v
+	}
+	if v := os.Getenv("CADDYKIT_DOMAIN"); v != "" {
+		c.Domain = v
+	}
+	if v := os.Getenv("CADDYKIT_DATA_DIR"); v != "" {
+		c.DataDir = v
+	}
+	if v := os.Getenv("CADDYKIT_TEMPLATE_DIR"); v != "" {
+		c.TemplateDir = v
+	}
+	if v := os.Getenv("CADDYKIT_SERVER"); v != "" {
+		c.Server = v
+	}
+	if v := os.Getenv("CADDYKIT_LOG_LEVEL"); v != "" {
+		c.LogLevel = v
+	}
+	if v := os.Getenv("CADDYKIT_LOG_FILE"); v != "" {
+		c.LogFile = v
 	}
 	if v := os.Getenv("CADDYKIT_RECONCILE_INTERVAL"); v != "" {
 		if d, err := time.ParseDuration(v); err == nil {
 			c.ReconcileInterval = d
 		}
 	}
-	return c
-}
-
-func env(key, def string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
-	}
-	return def
 }
 
 func xdg(key, fallback string) string {
@@ -74,7 +170,7 @@ func xdg(key, fallback string) string {
 }
 
 // Register adds all configuration flags to fs. Defaults are already resolved
-// from the environment by FromEnv.
+// from file and environment by FromEnv.
 func (c *Config) Register(fs *flag.FlagSet) {
 	c.RegisterCommon(fs)
 	fs.StringVar(&c.Domain, "domain", c.Domain, "public domain of the web UI")
