@@ -43,6 +43,33 @@ func TestRemoteAdminGuard(t *testing.T) {
 	}
 }
 
+func TestLogLevelValidation(t *testing.T) {
+	t.Setenv("CADDYKIT_LOG_LEVEL", "debug")
+	c := FromEnv()
+	if c.LogLevel != "debug" {
+		t.Fatalf("env log level not applied: %q", c.LogLevel)
+	}
+	if err := c.Validate(false); err != nil {
+		t.Fatalf("debug must be accepted: %v", err)
+	}
+	c.LogLevel = "loud"
+	if err := c.Validate(false); err == nil {
+		t.Fatal("unknown log level must be rejected")
+	}
+}
+
+func TestLogFlagsRegistered(t *testing.T) {
+	c := FromEnv()
+	fs := flag.NewFlagSet("t", flag.ContinueOnError)
+	c.RegisterCommon(fs)
+	if err := fs.Parse([]string{"--log-level", "error", "--log-file", "/tmp/x.log"}); err != nil {
+		t.Fatal(err)
+	}
+	if c.LogLevel != "error" || c.LogFile != "/tmp/x.log" {
+		t.Fatalf("log flags not applied: %+v", c)
+	}
+}
+
 func TestDomainValidation(t *testing.T) {
 	for _, ok := range []string{"a.example.com", "dev-proxy.example.org"} {
 		if err := ValidateDomain(ok); err != nil {

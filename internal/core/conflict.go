@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"caddykit/internal/caddy"
+	"caddykit/internal/logging"
 	"caddykit/internal/model"
 	"caddykit/internal/state"
 )
@@ -314,7 +315,7 @@ func (s *Service) RunReconcile(ctx context.Context, interval time.Duration, stop
 			if backoff > 60*time.Second {
 				backoff = 60 * time.Second
 			}
-			s.logf("reconcile failed: %v (next attempt in up to %s)", err, backoff)
+			s.logf(logging.Warn, "reconcile failed: %v (next attempt in up to %s)", err, backoff)
 			return false
 		}
 		backoff = interval
@@ -333,7 +334,7 @@ func (s *Service) RunReconcile(ctx context.Context, interval time.Duration, stop
 			if ok && failing {
 				// API is back: reconcile immediately instead of waiting a
 				// full interval (spec §5.1).
-				s.logf("reconcile recovered")
+				s.logf(logging.Info, "reconcile recovered")
 				run()
 			}
 			failing = !ok

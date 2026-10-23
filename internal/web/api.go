@@ -152,15 +152,15 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		var rl *RateLimitError
 		if errors.As(err, &rl) {
-			s.opts.Logger.Printf("login rate-limited for %s (retry after %s)", clientIP(r), rl.RetryAfter.Round(time.Second))
+			s.opts.Logger.Warnf("login rate-limited for %s (retry after %s)", clientIP(r), rl.RetryAfter.Round(time.Second))
 		} else {
 			// The password itself is never logged (auth.go).
-			s.opts.Logger.Printf("login failed for %s: %v", clientIP(r), err)
+			s.opts.Logger.Warnf("login failed for %s: %v", clientIP(r), err)
 		}
 		s.writeCoreError(w, err)
 		return
 	}
-	s.opts.Logger.Printf("login succeeded for %s", clientIP(r))
+	s.opts.Logger.Infof("login succeeded for %s", clientIP(r))
 	http.SetCookie(w, &http.Cookie{
 		Name: "caddykit_session", Value: tok, Path: "/",
 		HttpOnly: true, Secure: true, SameSite: http.SameSiteStrictMode,

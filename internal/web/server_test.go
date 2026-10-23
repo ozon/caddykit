@@ -2,11 +2,12 @@ package web
 
 import (
 	"bytes"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"caddykit/internal/logging"
 )
 
 func newLoggedServer(t *testing.T) (*Server, *bytes.Buffer) {
@@ -16,7 +17,7 @@ func newLoggedServer(t *testing.T) (*Server, *bytes.Buffer) {
 		t.Fatal(err)
 	}
 	buf := &bytes.Buffer{}
-	return &Server{opts: Options{Logger: log.New(buf, "", 0)}, auth: auth}, buf
+	return &Server{opts: Options{Logger: logging.New(buf, logging.Debug)}, auth: auth}, buf
 }
 
 func TestRequestLogRecordsStatusAndDropsQuery(t *testing.T) {

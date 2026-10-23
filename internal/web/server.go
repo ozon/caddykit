@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -20,6 +19,7 @@ import (
 
 	"caddykit/internal/caddy"
 	"caddykit/internal/core"
+	"caddykit/internal/logging"
 	"caddykit/internal/model"
 	"caddykit/internal/state"
 )
@@ -42,7 +42,7 @@ type Options struct {
 	AllowInsecure     bool
 	Version           string
 	Out               io.Writer
-	Logger            *log.Logger
+	Logger            *logging.Logger
 }
 
 type Server struct {
@@ -68,9 +68,9 @@ func Run(ctx context.Context, opts Options) error {
 		opts.Out = os.Stdout
 	}
 	if opts.Logger == nil {
-		opts.Logger = log.New(os.Stderr, "caddykit: ", log.LstdFlags)
+		opts.Logger = logging.New(os.Stderr, logging.Info)
 	}
-	opts.Logger.Printf("starting: data dir %s; caddy admin %s; server %q", opts.DataDir, opts.CaddyAdmin, opts.Server)
+	opts.Logger.Infof("starting: data dir %s; caddy admin %s; server %q", opts.DataDir, opts.CaddyAdmin, opts.Server)
 	if err := ensureDataDir(opts.DataDir); err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func Run(ctx context.Context, opts Options) error {
 	}
 	svc := core.New(cc, store, opts.Server)
 	svc.AllowInsecure = opts.AllowInsecure
-	svc.Logf = opts.Logger.Printf
+	svc.Log = opts.Logger.Log
 	if err := svc.ValidateServer(checkCtx); err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func Run(ctx context.Context, opts Options) error {
 	}
 	s.selfCreated = created
 	if created {
-		opts.Logger.Printf("created caddykit/self route for %s on 127.0.0.1:%d", opts.Domain, port)
+		opts.Logger.Infof("created caddykit/self route for %s on 127.0.0.1:%d", opts.Domain, port)
 	}
 	cleanupAll := func() {
 		cleanupListener()
@@ -173,7 +173,7 @@ func Run(ctx context.Context, opts Options) error {
 		}
 	}()
 
-	opts.Logger.Printf("backend listening on %s", ln.Addr().String())
+	opts.Logger.Infof("backend listening on %s", ln.Addr().String())
 	_, _ = fmt.Fprintf(opts.Out, "caddykit web: https://%s\nStartpasswort: %s\n", opts.Domain, auth.Password())
 
 	reconcileStop := make(chan struct{})
@@ -219,7 +219,7 @@ func serveUDS(ln net.Listener, h http.Handler) error {
 
 func (s *Server) shutdown() {
 	s.draining.Store(true)
-	s.opts.Logger.Printf("shutting down")
+	s.opts.Logger.Infof("shutting down")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if s.httpSrv != nil {
@@ -232,9 +232,9 @@ func (s *Server) shutdown() {
 	// Own route becomes a static 503. Failure is only a warning, never
 	// reported as success (spec §6.3).
 	if err := s.setSelf503(ctx); err != nil {
-		s.opts.Logger.Printf("warning: could not switch caddykit/self to 503: %v", err)
+		s.opts.Logger.Warnf("could not switch caddykit/self to 503: %v", err)
 	}
-	s.opts.Logger.Printf("shutdown complete")
+	s.opts.Logger.Infof("shutdown complete")
 }
 
 func (s *Server) handler() http.Handler {
@@ -275,7 +275,7 @@ func (s *Server) logRequests(next http.Handler) http.Handler {
 		start := time.Now()
 		rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(rec, r)
-		s.opts.Logger.Printf("%s %s %d %s %s", r.Method, r.URL.Path, rec.status,
+		s.opts.Logger.Infof("%s %s %d %s %s", r.Method, r.URL.Path, rec.status,
 			time.Since(start).Round(time.Millisecond), clientIP(r))
 	})
 }

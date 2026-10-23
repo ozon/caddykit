@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/url"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"caddykit/internal/config"
 	"caddykit/internal/core"
 	"caddykit/internal/ipc"
+	"caddykit/internal/logging"
 	"caddykit/internal/model"
 	"caddykit/internal/state"
 	"caddykit/internal/templates"
@@ -28,22 +30,29 @@ var (
 // Backend forwards to the running web process when possible, otherwise runs a
 // single one-shot operation under the instance and state locks.
 type Backend struct {
-	remote   *ipc.Client
-	svc      *core.Service
-	instance *state.FileLock
-	store    *state.Store
-	cfg      *config.Config
+	remote    *ipc.Client
+	svc       *core.Service
+	instance  *state.FileLock
+	store     *state.Store
+	cfg       *config.Config
+	logCloser io.Closer
 }
 
 func OpenBackend(ctx context.Context, cfg *config.Config) (*Backend, error) {
+	logger, closer, err := logging.FromFlags(cfg.LogLevel, cfg.LogFile, logging.Off)
+	if err != nil {
+		return nil, &usageError{err}
+	}
 	if c, err := ipc.Dial(cfg.DataDir); err == nil {
 		pctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 		ok := c.Ping(pctx)
 		cancel()
 		if ok {
-			return &Backend{remote: c, cfg: cfg}, nil
+			logger.Debugf("using the running web process at %s", state.SocketPath(cfg.DataDir))
+			return &Backend{remote: c, cfg: cfg, logCloser: closer}, nil
 		}
 	}
+	logger.Debugf("no reachable web process; one-shot mode with data dir %s", cfg.DataDir)
 	if err := config.EnsureDataDir(cfg.DataDir); err != nil {
 		return nil, err
 	}
@@ -91,9 +100,14 @@ func OpenBackend(ctx context.Context, cfg *config.Config) (*Backend, error) {
 	if err := svc.Recover(checkCtx); err != nil {
 		// An unclear operation is not fatal for read-only commands, but the
 		// error is meaningful for mutations. Keep the backend usable.
-		fmt.Fprintln(os.Stderr, "warning:", err)
+		if logger.Level() == logging.Off {
+			fmt.Fprintln(os.Stderr, "warning:", err)
+		} else {
+			logger.Warnf("recovery: %v", err)
+		}
 	}
-	return &Backend{svc: svc, instance: inst, store: store, cfg: cfg}, nil
+	svc.Log = logger.Log
+	return &Backend{svc: svc, instance: inst, store: store, cfg: cfg, logCloser: closer}, nil
 }
 
 func (b *Backend) Close() {
@@ -105,6 +119,9 @@ func (b *Backend) Close() {
 	}
 	if b.instance != nil {
 		_ = b.instance.Close()
+	}
+	if b.logCloser != nil {
+		_ = b.logCloser.Close()
 	}
 }
 

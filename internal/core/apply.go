@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"caddykit/internal/caddy"
+	"caddykit/internal/logging"
 	"caddykit/internal/model"
 	"caddykit/internal/state"
 	"github.com/google/uuid"
@@ -410,18 +411,18 @@ func (s *Service) Recover(ctx context.Context) error {
 	newMatch := imageMatchesRoutes(sd.Routes, j.New, j.RouteID)
 	switch {
 	case j.Phase == state.PhasePrepared && oldMatch && !newMatch:
-		s.logf("recovered: dropped prepared journal for route %s", j.RouteID)
+		s.logf(logging.Info, "recovered: dropped prepared journal for route %s", j.RouteID)
 		return s.Store.ClearJournal()
 	case newMatch:
-		s.logf("recovered: committed journal for route %s (phase %s)", j.RouteID, j.Phase)
+		s.logf(logging.Info, "recovered: committed journal for route %s (phase %s)", j.RouteID, j.Phase)
 		return s.commitLocal(j)
 	case j.Phase == state.PhasePrepared && oldMatch && newMatch:
-		s.logf("recovered: dropped prepared journal for route %s (caddy unchanged)", j.RouteID)
+		s.logf(logging.Info, "recovered: dropped prepared journal for route %s (caddy unchanged)", j.RouteID)
 		return s.Store.ClearJournal()
 	default:
 		j.Phase = state.PhaseUnclear
 		j.Error = "Caddy state matches neither the before nor the after image"
-		s.logf("recovery unclear for route %s: %s", j.RouteID, j.Error)
+		s.logf(logging.Warn, "recovery unclear for route %s: %s", j.RouteID, j.Error)
 		if err := s.Store.SaveJournal(j); err != nil {
 			return err
 		}
@@ -558,14 +559,14 @@ func undoRouteID(u *state.Undo) string {
 func (s *Service) logMutation(caller, description string, res *Result, err error) {
 	if err != nil {
 		if description != "" {
-			s.logf("%s failed: %s: %v", caller, description, err)
+			s.logf(logging.Error, "%s failed: %s: %v", caller, description, err)
 		} else {
-			s.logf("%s failed: %v", caller, err)
+			s.logf(logging.Error, "%s failed: %v", caller, err)
 		}
 		return
 	}
 	if res == nil {
 		return
 	}
-	s.logf("%s ok: kind=%s route=%s %s", caller, res.Kind, res.RouteID, res.Message)
+	s.logf(logging.Info, "%s ok: kind=%s route=%s %s", caller, res.Kind, res.RouteID, res.Message)
 }

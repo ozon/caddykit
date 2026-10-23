@@ -82,10 +82,18 @@ Priorität: **CLI-Argument > Umgebungsvariable > Standard**.
 | HTTP-Server | `--server` | `CADDYKIT_SERVER` | Autodetect (`:80`/`:443`, genau ein Kandidat) |
 | Remote-Admin | `--allow-remote-admin` | — | aus; nur HTTPS oder Unix-Socket |
 | Unsicheres Upstream-TLS | `--allow-insecure` | — | aus |
+| Log-Level | `--log-level` | `CADDYKIT_LOG_LEVEL` | `info` für `web`, `off` für alle anderen Befehle |
+| Log-Datei | `--log-file` | `CADDYKIT_LOG_FILE` | stderr |
 
 Remote-Admin-Endpunkte werden ohne `--allow-remote-admin` abgelehnt; mit Flag
 ist nur HTTPS oder ein Unix-Socket erlaubt. Unix-Sockets verwenden die
 Caddy-Notation `unix//run/caddy/admin.sock`.
+
+`--log-level` akzeptiert `off`, `error`, `warn`, `info` und `debug`. Mit
+`--log-file` schreibt caddykit die Zeilen stattdessen in eine Datei (0600,
+anhängen); ohne das Flag gehen sie nach stderr. Ein deaktiviertes Log-Level
+legt keine Log-Datei an. Der Standard `off` für Einmalbefehle hält deren
+Ausgabe unverändert.
 
 ### Environment-Variablen
 

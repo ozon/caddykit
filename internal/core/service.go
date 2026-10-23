@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"caddykit/internal/caddy"
+	"caddykit/internal/logging"
 	"caddykit/internal/model"
 	"caddykit/internal/state"
 )
@@ -75,10 +76,10 @@ type Service struct {
 	Server         string
 	AllowInsecure  bool
 	RedactPatterns []string
-	// Logf, when non-nil, receives operational events such as reconcile
-	// failures. The CLI leaves it nil so one-shot commands stay silent; the
+	// Log, when non-nil, receives operational events such as reconcile
+	// failures. The CLI leaves it nil unless --log-level asks for logs; the
 	// web backend wires it to its logger.
-	Logf func(format string, args ...any)
+	Log func(level logging.Level, format string, args ...any)
 
 	mu            sync.Mutex
 	lastReconcile time.Time
@@ -91,9 +92,9 @@ func New(c *caddy.Client, st *state.Store, server string) *Service {
 }
 
 // logf reports an operational event when a logger is wired up.
-func (s *Service) logf(format string, args ...any) {
-	if s.Logf != nil {
-		s.Logf(format, args...)
+func (s *Service) logf(level logging.Level, format string, args ...any) {
+	if s.Log != nil {
+		s.Log(level, format, args...)
 	}
 }
 

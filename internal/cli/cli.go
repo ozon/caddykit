@@ -18,6 +18,7 @@ import (
 
 	"caddykit/internal/config"
 	"caddykit/internal/core"
+	"caddykit/internal/logging"
 	"caddykit/internal/templates"
 	"caddykit/internal/web"
 )
@@ -50,6 +51,8 @@ Usage:
 
 Common options: --caddy-admin, --data-dir, --template-dir, --server
                 --allow-remote-admin, --allow-insecure
+Logging options: --log-level off|error|warn|info|debug, --log-file <path>
+                 (web defaults to info, other commands to off)
 `)
 }
 
@@ -133,9 +136,14 @@ func runWeb(args []string, version string) error {
 	if err := cfg.Validate(true); err != nil {
 		return &usageError{err}
 	}
+	logger, closeLog, err := logging.FromFlags(cfg.LogLevel, cfg.LogFile, logging.Info)
+	if err != nil {
+		return &usageError{err}
+	}
+	defer func() { _ = closeLog.Close() }()
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	err := web.Run(ctx, web.Options{
+	err = web.Run(ctx, web.Options{
 		CaddyAdmin:        cfg.CaddyAdmin,
 		Domain:            cfg.Domain,
 		Server:            cfg.Server,
@@ -144,6 +152,7 @@ func runWeb(args []string, version string) error {
 		ReconcileInterval: cfg.ReconcileInterval,
 		AllowInsecure:     cfg.AllowInsecure,
 		Version:           version,
+		Logger:            logger,
 	})
 	switch {
 	case err == nil:

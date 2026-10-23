@@ -6,14 +6,16 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"caddykit/internal/logging"
 )
 
 func TestRunReconcileLogsFailureAndRecovery(t *testing.T) {
 	svc, f := newTestService(t)
-	lines := make(chan string, 64)
-	svc.Logf = func(format string, args ...any) {
+	lines := make(chan logEntry, 64)
+	svc.Log = func(level logging.Level, format string, args ...any) {
 		select {
-		case lines <- fmt.Sprintf(format, args...):
+		case lines <- logEntry{level: level, line: fmt.Sprintf(format, args...)}:
 		default:
 		}
 	}
@@ -35,32 +37,32 @@ func TestRunReconcileLogsFailureAndRecovery(t *testing.T) {
 		<-done
 	}()
 
-	if line := waitForLog(t, lines, 3*time.Second, "reconcile failed"); line == "" {
-		t.Fatal("no reconcile failure was logged")
+	if line := waitForLog(t, lines, 3*time.Second, logging.Warn, "reconcile failed"); line == "" {
+		t.Fatal("no reconcile failure was logged at warn")
 	}
 
 	f.mu.Lock()
 	f.missingServer = false
 	f.mu.Unlock()
 
-	if line := waitForLog(t, lines, 3*time.Second, "reconcile recovered"); line == "" {
-		t.Fatal("no recovery was logged")
+	if line := waitForLog(t, lines, 3*time.Second, logging.Info, "reconcile recovered"); line == "" {
+		t.Fatal("no recovery was logged at info")
 	}
 }
 
-func waitForLog(t *testing.T, lines <-chan string, timeout time.Duration, want string) string {
+func waitForLog(t *testing.T, lines <-chan logEntry, timeout time.Duration, level logging.Level, want string) string {
 	t.Helper()
 	deadline := time.After(timeout)
 	var seen []string
 	for {
 		select {
-		case line := <-lines:
-			seen = append(seen, line)
-			if strings.Contains(line, want) {
-				return line
+		case e := <-lines:
+			seen = append(seen, fmt.Sprintf("[%s] %s", e.level, e.line))
+			if e.level == level && strings.Contains(e.line, want) {
+				return e.line
 			}
 		case <-deadline:
-			t.Fatalf("no log line containing %q within %s; saw %v", want, timeout, seen)
+			t.Fatalf("no %s log line containing %q within %s; saw %v", level, want, timeout, seen)
 			return ""
 		}
 	}

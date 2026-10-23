@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"caddykit/internal/logging"
 )
 
 const (
@@ -29,6 +31,8 @@ type Config struct {
 	Server            string
 	AllowRemoteAdmin  bool
 	AllowInsecure     bool
+	LogLevel          string
+	LogFile           string
 }
 
 // FromEnv builds defaults, taking environment variables into account.
@@ -40,6 +44,8 @@ func FromEnv() Config {
 		TemplateDir:       env("CADDYKIT_TEMPLATE_DIR", filepath.Join(xdg("XDG_CONFIG_HOME", ".config"), "caddykit", "templates")),
 		ReconcileInterval: DefaultReconcileInterval,
 		Server:            os.Getenv("CADDYKIT_SERVER"),
+		LogLevel:          os.Getenv("CADDYKIT_LOG_LEVEL"),
+		LogFile:           os.Getenv("CADDYKIT_LOG_FILE"),
 	}
 	if v := os.Getenv("CADDYKIT_RECONCILE_INTERVAL"); v != "" {
 		if d, err := time.ParseDuration(v); err == nil {
@@ -84,6 +90,8 @@ func (c *Config) RegisterCommon(fs *flag.FlagSet) {
 	fs.StringVar(&c.Server, "server", c.Server, "Caddy HTTP server name (autodetect when empty)")
 	fs.BoolVar(&c.AllowRemoteAdmin, "allow-remote-admin", false, "allow a non-local Caddy admin endpoint (HTTPS or unix only)")
 	fs.BoolVar(&c.AllowInsecure, "allow-insecure", false, "allow insecure upstream TLS verification")
+	fs.StringVar(&c.LogLevel, "log-level", c.LogLevel, "log level: off, error, warn, info or debug")
+	fs.StringVar(&c.LogFile, "log-file", c.LogFile, "write logs to this file instead of stderr")
 }
 
 // Validate checks the configuration. requireDomain is true for the web process.
@@ -98,6 +106,11 @@ func (c *Config) Validate(requireDomain bool) error {
 	}
 	if c.DataDir == "" {
 		return errors.New("--data-dir must not be empty")
+	}
+	if c.LogLevel != "" {
+		if _, err := logging.ParseLevel(c.LogLevel); err != nil {
+			return fmt.Errorf("--log-level: %w", err)
+		}
 	}
 	// The interval is only used by the web process; a web-only setting must
 	// not make route commands fail.
