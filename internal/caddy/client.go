@@ -5,6 +5,7 @@ package caddy
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -20,6 +21,8 @@ import (
 var (
 	ErrPreconditionFailed = errors.New("caddy: precondition failed")
 	ErrNotFound           = errors.New("caddy: not found")
+	ErrNoConfig           = errors.New("caddy is running without a configuration (the admin API /config/ endpoint is empty); load a config or restore the autosave")
+	ErrNoHTTPApp          = errors.New("caddy has no HTTP app configured (no servers to manage); add an HTTP app before using caddykit")
 )
 
 // StatusError is returned for unexpected non-2xx responses.
@@ -154,12 +157,23 @@ func (c *Client) Delete(ctx context.Context, path string, ifMatch string) error 
 // Check verifies that Caddy is reachable and sends the Etag header
 // (required Caddy >= 2.8.0, spec §1).
 func (c *Client) Check(ctx context.Context) error {
-	_, hdr, err := c.Get(ctx, "/config/")
+	body, hdr, err := c.Get(ctx, "/config/")
 	if err != nil {
 		return err
 	}
 	if hdr.Get("Etag") == "" {
 		return errors.New("caddy admin API does not send an Etag (header or trailer); check the admin API and Caddy version")
+	}
+	var cfg map[string]any
+	if len(body) > 0 {
+		_ = json.Unmarshal(body, &cfg)
+	}
+	if cfg == nil {
+		return ErrNoConfig
+	}
+	apps, _ := cfg["apps"].(map[string]any)
+	if _, ok := apps["http"]; !ok {
+		return ErrNoHTTPApp
 	}
 	return nil
 }

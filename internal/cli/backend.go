@@ -84,6 +84,9 @@ func OpenBackend(ctx context.Context, cfg *config.Config) (*Backend, error) {
 	defer cancel()
 	if err := cc.Check(checkCtx); err != nil {
 		release()
+		if errors.Is(err, caddy.ErrNoConfig) || errors.Is(err, caddy.ErrNoHTTPApp) {
+			return nil, err
+		}
 		return nil, fmt.Errorf("%w: %v", ErrCaddyUnreach, err)
 	}
 	svc := core.New(cc, store, cfg.Server)

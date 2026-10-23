@@ -15,7 +15,7 @@ func TestEtagRoundtripAndPrecondition(t *testing.T) {
 	mux.HandleFunc("/config/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			w.Header().Set("Etag", `"/config/ abc123"`)
-			_, _ = w.Write([]byte(`{}`))
+			_, _ = w.Write([]byte(`{"apps":{"http":{}}}`))
 			return
 		}
 	})
@@ -58,6 +58,40 @@ func TestEtagRoundtripAndPrecondition(t *testing.T) {
 	}
 }
 
+func TestCheckDetectsEmptyConfig(t *testing.T) {
+	cases := []struct {
+		name string
+		body string
+		want error
+	}{
+		{"empty", `null`, ErrNoConfig},
+		{"no-http-app", `{"apps":{}}`, ErrNoHTTPApp},
+		{"healthy", `{"apps":{"http":{}}}`, nil},
+	}
+	for _, tc := range cases {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Etag", `"/config/ 1"`)
+			_, _ = w.Write([]byte(tc.body))
+		}))
+		c, err := New(srv.URL)
+		if err != nil {
+			srv.Close()
+			t.Fatal(err)
+		}
+		got := c.Check(context.Background())
+		srv.Close()
+		if tc.want == nil {
+			if got != nil {
+				t.Fatalf("%s: unexpected error %v", tc.name, got)
+			}
+			continue
+		}
+		if !errors.Is(got, tc.want) {
+			t.Fatalf("%s: err = %v, want %v", tc.name, got, tc.want)
+		}
+	}
+}
+
 func TestCheckRequiresEtag(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`{}`))
@@ -75,7 +109,7 @@ func TestCheckRequiresEtag(t *testing.T) {
 func TestEtagTrailer(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Trailer", "Etag")
-		_, _ = w.Write([]byte(`{}`))
+		_, _ = w.Write([]byte(`{"apps":{"http":{}}}`))
 		w.Header().Set("Etag", `"/config/ abc123"`)
 	}))
 	defer srv.Close()
@@ -88,7 +122,7 @@ func TestEtagTrailer(t *testing.T) {
 		t.Fatalf("trailer Etag not accepted: %v", err)
 	}
 	body, etag, err := c.GetWithETag(ctx, "/config/")
-	if err != nil || string(body) != `{}` || etag != `"/config/ abc123"` {
+	if err != nil || string(body) != `{"apps":{"http":{}}}` || etag != `"/config/ abc123"` {
 		t.Fatalf("body=%q etag=%q err=%v", body, etag, err)
 	}
 }
