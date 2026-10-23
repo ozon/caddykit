@@ -2,7 +2,7 @@
 	import type { Change } from '$lib/types';
 	import { jsonPreview } from '$lib/api';
 
-	let { changes, compact = false }: { changes: Change[]; compact?: boolean } = $props();
+	let { changes = [], compact = false }: { changes?: Change[]; compact?: boolean } = $props();
 
 	const opMeta: Record<string, { mark: string; cls: string }> = {
 		add: { mark: '+', cls: 'diff-add' },

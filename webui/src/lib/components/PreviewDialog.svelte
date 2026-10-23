@@ -95,7 +95,7 @@
 
 				{#if view === 'diff'}
 					<div class="panel-2 p-2">
-						<Diff changes={preview.diff} />
+						<Diff changes={preview.diff ?? []} />
 					</div>
 				{:else if preview.route}
 					<CaddyfilePreview route={preview.route} />

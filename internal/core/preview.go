@@ -329,7 +329,7 @@ func (s *Service) previewAdoptLocked(sd *serverData, st *state.State, t *Target)
 	}
 	cur := t.Route.Clone()
 	p.Base = clonePtr(t.Route)
-	desired := cur
+	desired := cur.Clone()
 	if desired.ID() == "" {
 		id := model.NewID()
 		desired["@id"] = id
@@ -340,9 +340,7 @@ func (s *Service) previewAdoptLocked(sd *serverData, st *state.State, t *Target)
 	p.Entry = &state.Entry{ID: desired.ID(), Snapshot: desired, Anchor: state.Anchor{Index: t.Index}, AdoptedAt: time.Now(), Source: "adopt"}
 	p.Description = fmt.Sprintf("adopt route %s", describeRoute(*t.Route))
 	p.Warnings = append(p.Warnings, "adopted routes are restored automatically if they disappear externally; delete or unmanage to remove them permanently")
-	if desired.ID() != cur.ID() {
-		p.Diff = s.redact(model.DiffRoute(&cur, &desired, t.Index))
-	}
+	p.Diff = s.redact(model.DiffRoute(&cur, &desired, t.Index))
 	return p, nil
 }
 

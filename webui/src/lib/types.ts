@@ -39,7 +39,7 @@ export interface Entry {
 export interface Preview {
 	kind: string;
 	route_id?: string;
-	diff: Change[];
+	diff?: Change[];
 	etag?: string;
 	route?: Record<string, unknown>;
 	base?: Record<string, unknown>;

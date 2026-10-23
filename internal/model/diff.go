@@ -33,7 +33,7 @@ func Diff(before, after any) []Change {
 func DiffRoute(before, after *Route, index int) []Change {
 	prefix := "/routes/" + itoa(index)
 	if before == nil && after == nil {
-		return nil
+		return []Change{}
 	}
 	if before == nil {
 		return []Change{{Op: "add", Path: prefix, After: map[string]any(*after)}}
@@ -41,7 +41,7 @@ func DiffRoute(before, after *Route, index int) []Change {
 	if after == nil {
 		return []Change{{Op: "remove", Path: prefix, Before: map[string]any(*before)}}
 	}
-	var out []Change
+	out := []Change{}
 	diffValue(prefix, map[string]any(*before), map[string]any(*after), true, true, &out)
 	return out
 }
